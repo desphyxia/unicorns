@@ -58,7 +58,7 @@ function celebrate() {
 export function start(who) {
   if (P || ctx.getMode() !== 'castle') return false;
   ctx.chars.forEach((u) => { if (u.rider) ctx.dismount(u); });
-  who = who || ctx.chars.filter((c) => c.kind === 'princess')[Math.floor(Math.random() * 6)];
+  if (!who) { const ps = ctx.chars.filter((c) => c.kind === 'princess'); who = ps[Math.floor(Math.random() * ps.length)]; }
   P = { who, out: [false, false, false, false, false], state: 'candles', endT: 0 };
   cakeG.innerHTML = cake();
   cakeG.style.display = '';

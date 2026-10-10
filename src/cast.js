@@ -11,6 +11,11 @@ export const PRINCESSES = [
   { id: 'p4', name: 'Fern', dress: '#6edc8c', hair: '#e8743b', skin: '#ffe0bd', shoes: '#ff9a5c', tiara: '#ffd84d' },
   { id: 'p5', name: 'Sunny', dress: '#ffd23f', hair: '#a0522d', skin: '#c68642', shoes: '#5cc8ff', tiara: '#ffffff' },
   { id: 'p6', name: 'Rosie', dress: '#ff9a5c', hair: '#ff6fa5', skin: '#e0ac69', shoes: '#a98bff', tiara: '#ffd84d' },
+  // four more friends, each with her own hairstyle from the hair salon
+  { id: 'p7', name: 'Luna', dress: '#7a6bd8', hair: '#e8e4f0', skin: '#f6d5c0', shoes: '#ffd23f', tiara: '#ffffff', hairStyle: 5 },     // silver top bun
+  { id: 'p8', name: 'Poppy', dress: '#ff4f6a', hair: '#f5c542', skin: '#ffe0bd', shoes: '#ffffff', tiara: '#ffd84d', hairStyle: 3 },    // blonde pigtails
+  { id: 'p9', name: 'Coral', dress: '#2fc7b6', hair: '#2d2340', skin: '#e3b48a', shoes: '#ff8fc7', tiara: '#fff3b0', hairStyle: 4 },    // black ponytail
+  { id: 'p10', name: 'Willow', dress: '#c8e45a', hair: '#6a3d1e', skin: '#d9a066', shoes: '#a98bff', tiara: '#ffe27a', hairStyle: 2 },  // brown bob
 ];
 
 export const UNICORNS = [
