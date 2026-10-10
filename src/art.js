@@ -103,15 +103,17 @@ export function defaultLook(p) {
 function hairBack(p) {
   if (p.hairStyle !== 'wavy') return `<rect x="-24" y="-92" width="48" height="44" rx="16" fill="${p.hair}"/>
   <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${p.hair}"/>`;
-  return `<ellipse cx="0" cy="-92" rx="25" ry="26" fill="${p.hair}"/>
-  <path d="M-25,-92 L-28,-58 Q-31,-46 -23,-43 Q-16,-37 -9,-44 Q-2,-37 5,-44 Q12,-37 19,-43 Q29,-46 28,-58 L25,-92Z" fill="${p.hair}"/>
-  ${[[-27, -84], [-29, -72], [-27, -60], [-26, -49], [27, -84], [29, -72], [27, -60], [26, -49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${p.hair}"/>`).join('')}
-  <path d="M-19,-98 Q-24,-72 -20,-52 M17,-99 Q23,-72 20,-50 M-6,-102 Q-11,-82 -9,-60 M7,-101 Q12,-80 9,-58" stroke="${p.hair2 || p.hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".75"/>`;
+  return `<path d="M-19,-104 Q-42,-100 -38,-76 Q-36,-62 -28,-60 Q-30,-80 -22,-90Z" fill="${p.hair}"/>
+  <ellipse cx="0" cy="-92" rx="27" ry="27" fill="${p.hair}"/>
+  <path d="M-27,-92 L-30,-58 Q-33,-46 -24,-43 Q-16,-36 -9,-44 Q-2,-36 5,-44 Q12,-36 19,-43 Q31,-46 30,-58 L27,-92Z" fill="${p.hair}"/>
+  ${[[-29, -84], [-31, -72], [-29, -60], [-27, -49], [29, -84], [31, -72], [29, -60], [27, -49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${p.hair}"/>`).join('')}
+  <path d="M-20,-98 Q-25,-72 -21,-52 M18,-99 Q24,-72 21,-50 M-6,-102 Q-11,-82 -9,-60 M8,-101 Q13,-80 10,-58 M-34,-92 Q-37,-78 -32,-66" stroke="${p.hair2 || p.hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".75"/>`;
 }
 function fringe(p) {
   if (p.hairStyle !== 'wavy') return `<path d="M-17,-91 Q-9,-112 0,-103 Q9,-112 17,-91 Q9,-99 0,-95 Q-9,-99 -17,-91Z" fill="${p.hair}"/>`;
-  return `<path d="M-18,-86 Q-21,-112 2,-110 Q21,-110 19,-88 Q12,-102 0,-99 Q-10,-96 -18,-86Z" fill="${p.hair}"/>
-  <path d="M-12,-105 Q-2,-109 9,-103" stroke="${p.hair2 || p.hair}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>`;
+  return `<path d="M-21,-90 Q-21,-113 4,-111 Q23,-109 22,-92 Q13,-103 -1,-100 Q-9,-97 -14,-88 Q-18,-85 -21,-90Z" fill="${p.hair}"/>
+  <path d="M-14,-106 Q-3,-110 12,-103 M-17,-98 Q-12,-103 -6,-102" stroke="${p.hair2 || p.hair}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>
+  <circle cx="-19" cy="-103" r="3.6" fill="#fff" stroke="#e8dcd2" stroke-width="1"/>`;
 }
 function face(p) {
   if (p.hairStyle !== 'wavy') return `<circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
@@ -119,15 +121,15 @@ function face(p) {
   <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
   <circle cx="10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
   <path d="M-4,-82 Q0,-78 4,-82" stroke="#c4476e" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-  return `<path d="M-10.5,-95 q3.5,-2.6 7,-.4 M3.5,-95.4 q3.5,-2 7,.6" stroke="#8a5a34" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-  <ellipse cx="-6.5" cy="-88" rx="3.2" ry="3.7" fill="#3b2418"/><ellipse cx="6.5" cy="-88" rx="3.2" ry="3.7" fill="#3b2418"/>
-  <circle cx="-5.5" cy="-89.5" r="1.2" fill="#fff"/><circle cx="7.5" cy="-89.5" r="1.2" fill="#fff"/>
-  <path d="M-10,-90.5 l-2,-1.6 M10,-90.5 l2,-1.6" stroke="#3b2418" stroke-width="1.2" stroke-linecap="round"/>
-  <circle cx="-11" cy="-83" r="3.8" fill="#ff8f9f" opacity=".5"/><circle cx="11" cy="-83" r="3.8" fill="#ff8f9f" opacity=".5"/>
-  <path d="M-1,-84 q1,1.5 2,0" stroke="#d99a7a" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-  <path d="M-5,-80.6 Q0,-76.4 5,-80.6 Q0,-79 -5,-80.6Z" fill="#ff8fa8"/>
-  <path d="M-5,-80.6 Q0,-76.4 5,-80.6" stroke="#d96a8a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
-  <ellipse cx="-1.5" cy="-79.2" rx="1.8" ry=".7" fill="#fff" opacity=".7"/>`;
+  return `<path d="M-11.5,-95.5 q4,-2.6 8,-.4 M3.5,-95.9 q4,-2 8,.6" stroke="#7a4a2c" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-7" cy="-88" rx="3.5" ry="4" fill="#33201a"/><ellipse cx="7" cy="-88" rx="3.5" ry="4" fill="#33201a"/>
+  <circle cx="-6" cy="-89.6" r="1.3" fill="#fff"/><circle cx="8" cy="-89.6" r="1.3" fill="#fff"/>
+  <path d="M-10.8,-90.8 l-2,-1.6 M10.8,-90.8 l2,-1.6" stroke="#33201a" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="-12.5" cy="-82" r="4.4" fill="#ff8f9f" opacity=".5"/><circle cx="12.5" cy="-82" r="4.4" fill="#ff8f9f" opacity=".5"/>
+  <path d="M-1,-83.6 q1,1.5 2,0" stroke="#d99a7a" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <path d="M-3.6,-79.6 Q0,-76.6 3.6,-79.6 Q0,-78.4 -3.6,-79.6Z" fill="#f58aa5"/>
+  <path d="M-3.6,-79.6 Q0,-76.6 3.6,-79.6" stroke="#d96a8a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-1" cy="-78.6" rx="1.4" ry=".6" fill="#fff" opacity=".7"/>`;
 }
 
 export function princessSVG(p, look) {
@@ -140,7 +142,7 @@ export function princessSVG(p, look) {
   ${dressSVG(l.dress, l.dressColor)}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <circle cx="0" cy="-90" r="17" fill="${p.skin}"/>
+  ${p.hairStyle === 'wavy' ? `<ellipse cx="0" cy="-89" rx="20" ry="18" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
   ${fringe(p)}
   ${face(p)}
   ${tiaraSVG(l.tiara, l.tiaraColor)}

@@ -3,8 +3,9 @@
 export const RAINBOW = ['#ff6b8b', '#ff9a5c', '#ffd23f', '#6edc8c', '#5cc8ff', '#a98bff'];
 
 export const PRINCESSES = [
-  // Elsa is drawn to look like the real Elsa: honey-brown wavy hair with golden highlights, side-swept fringe, big dark brown eyes, rosy cheeks
-  { id: 'elsa', name: 'Elsa', dress: '#fff3cf', hair: '#b27c4a', hair2: '#e6b777', skin: '#f3c7a3', shoes: '#ff8fc7', tiara: '#ffd84d', hairStyle: 'wavy' },
+  // Elsa is drawn to look like the real Elsa: round face, wavy chestnut hair with lighter streaks, side-swept fringe,
+  // a little tied-back tuft, big dark brown eyes and rosy cheeks. Her favourite coral T-shirt colour is her default dress.
+  { id: 'elsa', name: 'Elsa', dress: '#f27c80', hair: '#8c5b3a', hair2: '#c9915f', skin: '#f1c4a0', shoes: '#ff8fc7', tiara: '#ffd84d', hairStyle: 'wavy' },
   { id: 'p2', name: 'Violet', dress: '#a98bff', hair: '#5b3a29', skin: '#f1c27d', shoes: '#ff8fc7', tiara: '#ffe27a' },
   { id: 'p3', name: 'Marina', dress: '#5cc8ff', hair: '#2d2340', skin: '#8d5524', shoes: '#ffd23f', tiara: '#fff3b0' },
   { id: 'p4', name: 'Fern', dress: '#6edc8c', hair: '#e8743b', skin: '#ffe0bd', shoes: '#ff9a5c', tiara: '#ffd84d' },
