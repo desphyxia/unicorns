@@ -5,19 +5,20 @@ import { lakeSVG, duckSVG } from './lakeart.js';
 export const W = 1600;
 export const H = 900;
 
-// Castle rooms: 2 columns x 3 rows, drawn like a dollhouse cross-section.
-export const ROOM_COLORS = ['#ffb3c7', '#ffcf9e', '#fff0a0', '#bfeabf', '#a9d8ff', '#d3bdff'];
+// Castle rooms: a stepped dollhouse with 2 + 4 + 4 = 10 rooms.
+export const ROOM_COLORS = ['#ffb3c7', '#ffcf9e', '#fff0a0', '#bfeabf', '#a9d8ff', '#d3bdff', '#ffc2e2', '#ffe0b8', '#c8f0ff', '#e0cfff'];
 export const ROOMS = [];
-for (let row = 0; row < 3; row++) {
-  for (let col = 0; col < 2; col++) {
-    ROOMS.push({ i: row * 2 + col, x: 400 + col * 400, y: 220 + row * 180, w: 400, h: 180, color: ROOM_COLORS[row * 2 + col] });
+[{ y: 220, cols: 2, x0: 590 }, { y: 400, cols: 4, x0: 380 }, { y: 580, cols: 4, x0: 380 }].forEach((row) => {
+  for (let c = 0; c < row.cols; c++) {
+    const i = ROOMS.length;
+    ROOMS.push({ i, x: row.x0 + c * 210, y: row.y, w: 210, h: 180, color: ROOM_COLORS[i] });
   }
-}
+});
 
 // Where characters may walk.
 export const GROUND = { x0: 50, x1: 1330, y0: 815, y1: 880 };
 export function roomBounds(r) {
-  return { x0: r.x + 50, x1: r.x + r.w - 50, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
+  return { x0: r.x + 45, x1: r.x + r.w - 45, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
 }
 
 // ---- wardrobe pieces: 6 styles each, all recolourable ----
@@ -119,6 +120,11 @@ export function princessSVG(p, look) {
 </g>`;
 }
 
+// A princess sitting on a unicorn's back (legs hidden by the clip, which the caller defines).
+export function riderSVG(p, look, clipId = 'riderclip') {
+  return `<g class="rider" transform="translate(-4 -40) scale(.66)" clip-path="url(#${clipId})">${princessSVG(p, look)}</g>`;
+}
+
 // Unicorns face right; the caller flips them.
 export function unicornSVG(u) {
   const tail = RAINBOW.map((c, i) => `<path d="M-40,-62 Q${-80 - i * 2},${-66 + i * 4} ${-72 + i * 3},${-18 + i * 3}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".95"/>`).join('');
@@ -163,19 +169,21 @@ function flower(x, y, c) {
 
 function room(r) {
   const bedLeft = r.i % 2 === 0;
-  const bx = bedLeft ? r.x + 22 : r.x + r.w - 142;
-  const wx = r.x + r.w / 2 - 28;
+  const bx = bedLeft ? r.x + 12 : r.x + r.w - 112;
+  const wx = r.x + r.w / 2 - 24;
   const fy = r.y + r.h - 22;
+  const lampX = bedLeft ? r.x + r.w - 28 : r.x + 28;
   return `<g>
     <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.color}"/>
     <rect x="${r.x}" y="${fy}" width="${r.w}" height="22" fill="#ffffff" opacity=".45"/>
-    <path d="M${wx},${r.y + 100} V${r.y + 56} a28,28 0 0 1 56,0 V${r.y + 100} Z" fill="#dff3ff" stroke="#fff" stroke-width="5"/>
-    <path d="M${wx + 28},${r.y + 28} V${r.y + 100} M${wx},${r.y + 70} H${wx + 56}" stroke="#fff" stroke-width="3"/>
-    <rect x="${bx}" y="${fy - 40}" width="120" height="40" rx="10" fill="#fff" opacity=".85"/>
-    <rect x="${bx + (bedLeft ? 6 : 50)}" y="${fy - 52}" width="64" height="26" rx="12" fill="#fff"/>
-    <rect x="${bx + (bedLeft ? 52 : 4)}" y="${fy - 34}" width="64" height="30" rx="8" fill="${RAINBOW[r.i]}" opacity=".85"/>
-    <path d="M${bedLeft ? r.x + r.w - 40 : r.x + 40},${fy} v-46" stroke="#fff" stroke-width="4"/>
-    <circle cx="${bedLeft ? r.x + r.w - 40 : r.x + 40}" cy="${fy - 54}" r="10" fill="#fff6a8"/>
+    <path d="M${wx},${r.y + 100} V${r.y + 56} a24,24 0 0 1 48,0 V${r.y + 100} Z" fill="#dff3ff" stroke="#fff" stroke-width="5"/>
+    <path d="M${wx + 24},${r.y + 32} V${r.y + 100} M${wx},${r.y + 72} H${wx + 48}" stroke="#fff" stroke-width="3"/>
+    <rect x="${bx}" y="${fy - 36}" width="100" height="36" rx="10" fill="#fff" opacity=".85"/>
+    <rect x="${bx + (bedLeft ? 6 : 46)}" y="${fy - 46}" width="48" height="24" rx="11" fill="#fff"/>
+    <rect x="${bx + (bedLeft ? 44 : 4)}" y="${fy - 30}" width="52" height="26" rx="8" fill="${RAINBOW[r.i % 6]}" opacity=".85"/>
+    <path d="M${lampX},${fy} v-46" stroke="#fff" stroke-width="4"/>
+    <circle cx="${lampX}" cy="${fy - 54}" r="10" fill="#fff6a8"/>
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#fff" stroke-width="6"/>
   </g>`;
 }
 
@@ -184,7 +192,9 @@ export function sceneSVG() {
     const rad = 760 - i * 26;
     return `<path d="M${800 - rad},800 A${rad},${rad} 0 0 1 ${800 + rad},800" stroke="${c}" stroke-width="28" fill="none" opacity=".75"/>`;
   }).join('');
-  const battlements = Array.from({ length: 21 }, (_, i) => `<rect x="${384 + i * 40}" y="186" width="24" height="18" rx="4" fill="#efe0ff"/>`).join('');
+  const merlon = (x, y) => `<rect x="${x}" y="${y}" width="24" height="18" rx="4" fill="#efe0ff"/>`;
+  const battlements = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => merlon(584 + i * 40, 186)).join('')
+    + [0, 1, 2, 3, 4].map((i) => merlon(384 + i * 40, 386) + merlon(1024 + i * 40, 386)).join('');
   const towerWin = (x, y) => `<path d="M${x},${y + 36} v-22 a12,12 0 0 1 24,0 v22 Z" fill="#a9d8ff" stroke="#fff" stroke-width="3"/>`;
 
   return `
@@ -198,6 +208,7 @@ export function sceneSVG() {
     <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#9fe3ff"/><stop offset="1" stop-color="#6fc3f5"/>
     </linearGradient>
+    <clipPath id="riderclip"><rect x="-60" y="-200" width="120" height="184"/></clipPath>
     <clipPath id="waterclip"><rect x="-150" y="-300" width="300" height="278"/></clipPath>
     <linearGradient id="roofbow" x1="0" y1="0" x2="0" y2="1">
       ${RAINBOW.map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join('')}
@@ -212,7 +223,7 @@ export function sceneSVG() {
   <ellipse cx="1400" cy="810" rx="440" ry="140" fill="#aee9b8"/>
 
   <!-- castle -->
-  <rect x="380" y="200" width="840" height="580" rx="10" fill="#f0e2ff" stroke="#fff" stroke-width="6"/>
+  <path d="M580,200 H1020 V400 H1220 V780 H380 V400 H580 Z" fill="#f0e2ff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
   ${battlements}
   <g>
     <rect x="290" y="170" width="90" height="610" rx="8" fill="#f6e8ff" stroke="#fff" stroke-width="5"/>
@@ -229,9 +240,6 @@ export function sceneSVG() {
   <circle cx="800" cy="120" r="22" fill="#fff" opacity=".85"/><path d="M800,106 l4,9 10,1 -8,7 3,10 -9,-6 -9,6 3,-10 -8,-7 10,-1Z" fill="#ffd84d"/>
 
   <g id="rooms">${ROOMS.map(room).join('')}</g>
-  <path d="M600,220 V780 M800,220 V780 M1000,220 V780" stroke="none"/>
-  <rect x="400" y="220" width="800" height="540" fill="none" stroke="#fff" stroke-width="8"/>
-  <path d="M400,400 H1200 M400,580 H1200 M800,220 V760" stroke="#fff" stroke-width="8"/>
   <g id="hl">${ROOMS.map(r => `<rect class="room-hl" data-room="${r.i}" x="${r.x + 4}" y="${r.y + 4}" width="${r.w - 8}" height="${r.h - 8}" rx="6"/>`).join('')}</g>
 
   <!-- grounds -->

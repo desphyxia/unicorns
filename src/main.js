@@ -1,7 +1,8 @@
 import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
-import { sceneSVG, princessSVG, unicornSVG, ROOMS, GROUND, roomBounds } from './art.js';
+import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, GROUND, roomBounds } from './art.js';
 import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from './lakeart.js';
 import { openWardrobe } from './wardrobe.js';
+import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, isMuddy } from './trip.js';
 import * as audio from './audio.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -14,8 +15,12 @@ const castleScene = svg.querySelector('#castleScene');
 const lakeScene = svg.querySelector('#lakeScene');
 const ducksG = svg.querySelector('#ducks');
 const highlights = [...svg.querySelectorAll('.room-hl')];
+const stash = document.createElementNS(NS, 'g'); // riders wait here while sitting on a unicorn
+stash.setAttribute('style', 'display:none');
+svg.appendChild(stash);
 const fade = document.getElementById('fade');
 const lakeHome = document.getElementById('lakeHome');
+const picker = document.getElementById('picker');
 
 // ---------- saved state ----------
 const KEY = 'elsas-castle-v1';
@@ -25,7 +30,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catc
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-let mode = 'castle'; // 'castle' | 'lake'
+let mode = 'castle'; // 'castle' | 'lake' | 'trip'
 let busy = false;
 
 // ---------- characters ----------
@@ -46,6 +51,7 @@ function make(def, kind, index) {
   const bodyWrap = el('g', {}, flip);
   const art = el('g', {}, bodyWrap);
   art.innerHTML = kind === 'princess' ? princessSVG(def, saved.looks[def.id]) : unicornSVG(def);
+  const riderG = el('g', { style: 'display:none' }, bodyWrap);
 
   // mud spots and soap foam sit on top of the artwork
   const area = kind === 'princess' ? { x0: -22, x1: 22, y0: -112, y1: -22 } : { x0: -46, x1: 84, y0: -118, y1: -30 };
@@ -65,12 +71,12 @@ function make(def, kind, index) {
   layer.appendChild(g);
 
   const c = {
-    def, kind, index, el: g, flip, art, body: bodyWrap, shadow, dirtG, foamEls: [...foamG.children],
+    def, kind, index, el: g, flip, art, riderG, body: bodyWrap, shadow, dirtG, foamEls: [...foamG.children],
     scale: kind === 'unicorn' ? 0.85 : 1,
     walk: kind === 'unicorn' ? rand(40, 60) : rand(45, 70),
     speed: 50, x: 0, y: 0, tx: 0, ty: 0, wait: rand(0, 2), face: 1,
     home: null, moving: false, dragging: false, hopT: -1, phase: rand(0, 6),
-    water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
+    rider: null, mount: null, water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
   };
   c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) ? saved.homes[def.id] : null;
   const b = boundsOf(c);
@@ -242,6 +248,7 @@ window.addEventListener('pointermove', (e) => {
     d.c.x = p.x;
     d.c.y = p.y + 55; // hold her around the middle
     d.c.tx = d.c.x; d.c.ty = d.c.y;
+    d.px = p.x; d.py = p.y;
     d.room = mode === 'castle' && d.c.kind === 'princess' ? roomAt(p.x, p.y) : null;
     updateHighlights();
   }
@@ -256,6 +263,10 @@ function endDrag(e) {
   c.dragging = false;
   if (!d.moved) { tap(c); updateHighlights(); return; }
   if (mode === 'lake') { dropInLake(c); updateHighlights(); return; }
+  if (c.kind === 'princess') { // dropped onto a unicorn? hop on!
+    const u = chars.find((k) => k.kind === 'unicorn' && !k.rider && !k.dragging && Math.abs(d.px - k.x) < 95 && d.py > k.y - 150 && d.py < k.y + 20);
+    if (u) { mount(c, u); updateHighlights(); return; }
+  }
   const room = c.kind === 'princess' ? d.room : null;
   if (c.kind === 'princess') {
     c.home = room ? room.i : null;
@@ -289,7 +300,11 @@ function tap(c) {
     return;
   }
   sparkle(c.x, c.y - (c.kind === 'unicorn' ? 90 : 70), 8);
-  if (c.kind === 'unicorn') { audio.neigh(); return; }
+  if (c.kind === 'unicorn') {
+    audio.neigh();
+    if (c.rider && mode === 'castle') openPicker(c);
+    return;
+  }
   audio.chime(3 + (c.index * 2) % 7);
   if (mode === 'lake') return;
   // tapping a princess in the castle opens her wardrobe
@@ -304,6 +319,83 @@ function tap(c) {
     },
     onClose: () => { idle = 0; c.hopT = 0; sparkle(c.x, c.y - 70, 14); },
   });
+}
+
+// ---------- riding ----------
+function mount(p, u) {
+  p.mount = u;
+  u.rider = p;
+  stash.appendChild(p.el);
+  u.riderG.innerHTML = riderSVG(p.def, saved.looks[p.def.id]);
+  u.riderG.style.display = '';
+  u.hopT = 0;
+  u.wait = 3;
+  sparkle(u.x, u.y - 110, 14);
+  audio.moveIn();
+}
+
+function dismount(u) {
+  const p = u.rider;
+  if (!p) return;
+  u.rider = null;
+  p.mount = null;
+  u.riderG.style.display = 'none';
+  u.riderG.innerHTML = '';
+  layer.appendChild(p.el);
+  const b = boundsOf(p); // back to her own room if she has one, otherwise next to the unicorn
+  if (p.home === null) { p.x = clamp(u.x + 70, b.x0, b.x1); p.y = u.y; } else { p.x = rand(b.x0, b.x1); p.y = rand(b.y0, b.y1); }
+  p.tx = p.x; p.ty = p.y;
+  p.hopT = 0;
+  p.wait = rand(1, 2);
+  sparkle(p.x, p.y - 70, 10);
+}
+
+const DOWN_ICON = '<svg viewBox="0 0 160 120"><rect width="160" height="120" rx="18" fill="#ffe3f4"/><path d="M80,18 v62 M52,56 l28,30 28,-30" stroke="#ff6b8b" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BACK_ICON = '<svg viewBox="0 0 100 100"><path d="M60,24 l-28,26 28,26" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function openPicker(u) {
+  picker.innerHTML = `<button class="round-btn pk-back" data-act="back" aria-label="Back">${BACK_ICON}</button>
+    <div class="pk-grid">${DEST_IDS.map((id) => `<button class="pk-btn" data-dest="${id}">${destIcon(id)}</button>`).join('')}<button class="pk-btn" data-act="down">${DOWN_ICON}</button></div>`;
+  picker.hidden = false;
+  picker._u = u;
+}
+picker.onpointerdown = (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const u = picker._u;
+  picker.hidden = true;
+  if (b.dataset.act === 'down') { audio.pop(); dismount(u); return; }
+  if (b.dataset.dest && u && u.rider) { audio.moveIn(); goTo(() => beginTrip(u, b.dataset.dest)); }
+};
+
+const TRIP_SECONDS = Number(new URLSearchParams(location.search).get('tripseconds')) || 28; // ?tripseconds=5 for quick testing
+let tripUnicorn = null;
+function beginTrip(u, dest) {
+  mode = 'trip';
+  tripUnicorn = u;
+  svg.style.display = 'none';
+  lakeHome.hidden = false;
+  startTrip({
+    dest,
+    seconds: TRIP_SECONDS,
+    unicorn: u.def,
+    princess: u.rider.def,
+    look: saved.looks[u.rider.def.id],
+    onArrive: (id) => {
+      if (!isMuddy(id)) return;
+      for (const c of [u, u.rider]) { c.dirt = true; saved.dirt[c.def.id] = 1; }
+      save();
+    },
+  });
+}
+
+function endTripScene() {
+  endTrip();
+  mode = 'castle';
+  svg.style.display = '';
+  lakeHome.hidden = true;
+  if (tripUnicorn) dismount(tripUnicorn);
+  tripUnicorn = null;
 }
 
 // ---------- the lake ----------
@@ -409,6 +501,7 @@ function goTo(fn) {
 }
 
 function enterLake() {
+  chars.forEach((u) => { if (u.rider) dismount(u); });
   mode = 'lake';
   for (const c of chars) {
     c.cast = { x: c.x, y: c.y };
@@ -449,9 +542,8 @@ svg.querySelector('#pond').addEventListener('pointerdown', (e) => {
 });
 lakeHome.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  if (mode !== 'lake') return;
-  audio.moveIn();
-  goTo(leaveLake);
+  if (mode === 'lake') { audio.moveIn(); goTo(leaveLake); }
+  else if (mode === 'trip') { audio.moveIn(); goTo(endTripScene); }
 });
 
 // ---------- hint: a little hand shows what to drag ----------
@@ -466,13 +558,13 @@ function updateHint(dt) {
   if (!show) { hintT = 0; return; }
   hintT += dt;
   const c = mode === 'castle'
-    ? chars.find((k) => k.kind === 'princess' && k.home === null)
+    ? chars.find((k) => k.kind === 'princess' && k.home === null && !k.mount)
     : chars.find((k) => k.kind === 'princess' && !k.water);
   if (!c) return;
   const k = (hintT % 3.2) / 3.2;
   const e = k < 0.2 ? 0 : k > 0.8 ? 1 : (k - 0.2) / 0.6;
   const ease = e * e * (3 - 2 * e);
-  const tx = mode === 'castle' ? ROOMS[0].x + 200 : WATER.cx, ty = mode === 'castle' ? ROOMS[0].y + 100 : WATER.cy - 40;
+  const tx = mode === 'castle' ? ROOMS[0].x + 105 : WATER.cx, ty = mode === 'castle' ? ROOMS[0].y + 100 : WATER.cy - 40;
   const x = c.x + (tx - c.x) * ease;
   const y = c.y - 60 + (ty - (c.y - 60)) * ease;
   hand.setAttribute('transform', `translate(${x} ${y}) scale(${1 + Math.sin(k * 20) * 0.04})`);
@@ -486,7 +578,10 @@ function frame(now) {
   last = now;
   const t = now / 1000;
 
+  if (mode === 'trip') updateTrip(dt, t);
+
   for (const c of chars) {
+    if (c.mount) continue;
     let hop = 0;
     if (c.hopT >= 0) {
       c.hopT += dt * 2.2;
@@ -542,7 +637,7 @@ function frame(now) {
   }
 
   // depth sorting: lower on screen = in front
-  const sorted = [...chars].sort((a, b) => (a.dragging ? 1e5 : a.y) - (b.dragging ? 1e5 : b.y));
+  const sorted = chars.filter((c) => !c.mount).sort((a, b) => (a.dragging ? 1e5 : a.y) - (b.dragging ? 1e5 : b.y));
   sorted.forEach((c, i) => { if (layer.children[i] !== c.el) layer.insertBefore(c.el, layer.children[i]); });
 
   if (mode === 'lake') {
@@ -592,6 +687,7 @@ const snd = document.getElementById('snd');
 snd.addEventListener('change', () => audio.setEnabled(snd.checked));
 document.getElementById('reset').addEventListener('click', () => {
   if (!confirm('Move everyone back out and start over?')) return;
+  chars.forEach((u) => { if (u.rider && mode === 'castle') dismount(u); });
   saved = { ...saved, homes: {}, dirt: {}, hinted: false, lakeHinted: false };
   save();
   chars.forEach((c) => {
