@@ -18,11 +18,10 @@ const teethSVG = () => {
 
 const brushSVG = '<rect x="-7" y="10" width="14" height="124" rx="7" fill="#ff8fc7" stroke="#fff" stroke-width="3"/><rect x="-18" y="-16" width="36" height="30" rx="9" fill="#fff" stroke="#fff" stroke-width="3"/><path d="M-12,-12 V8 M-4,-12 V8 M4,-12 V8 M12,-12 V8" stroke="#5cc8ff" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="62" r="4" fill="#fff"/>';
 
-export function openTeeth({ cast, index = 0, onClose }) {
+export function openTeeth({ cast, index = 0, brushedToday = () => false, onBrushed = () => {}, onClose }) {
   const root = document.getElementById('teeth');
   let idx = index;
   let spots = [];
-  let regen = null;
   let down = null;
 
   function render(animate) {
@@ -35,7 +34,7 @@ export function openTeeth({ cast, index = 0, onClose }) {
       </div>
       <div class="t-side"><svg class="t-mouth" viewBox="0 0 400 300">${teethSVG()}<g id="brush" transform="translate(${REST.x} ${REST.y}) rotate(18)">${brushSVG}</g></svg></div>
       <button class="w-done" aria-label="Done">${CHECK}</button>`;
-    makeSpots();
+    if (brushedToday(c.def)) { spots = []; root.classList.add('shiny'); } else makeSpots();
   }
 
   const q = (s) => root.querySelector(s);
@@ -86,18 +85,18 @@ export function openTeeth({ cast, index = 0, onClose }) {
   }
   function allClean() {
     root.classList.add('shiny');
+    onBrushed(cast[idx].def);
     [0, 2, 4, 7].forEach((n, i) => setTimeout(() => audio.chime(n + 4), i * 140));
     const pv = q('.w-preview');
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');
     for (let i = 0; i < 10; i++) star(rnd(60, 340), rnd(50, 250));
-    regen = setTimeout(() => { regen = null; makeSpots(); }, 2600);
   }
 
   root.onpointerdown = (e) => {
     const t = e.target.closest('button');
     if (t) {
-      if (t.dataset.who !== undefined) { idx = +t.dataset.who; audio.chime(5 + idx); clearTimeout(regen); regen = null; render(true); }
-      else if (t.classList.contains('w-done')) { clearTimeout(regen); audio.moveIn(); root.hidden = true; root.innerHTML = ''; onClose(cast[idx].def); }
+      if (t.dataset.who !== undefined) { idx = +t.dataset.who; audio.chime(5 + idx); render(true); }
+      else if (t.classList.contains('w-done')) { audio.moveIn(); root.hidden = true; root.innerHTML = ''; onClose(cast[idx].def); }
       return;
     }
     const svg = e.target.closest('.t-mouth');
@@ -127,7 +126,7 @@ export function openTeeth({ cast, index = 0, onClose }) {
       }
       if (s.v > 0) left++;
     });
-    if (!left && !regen && spots.length) allClean();
+    if (!left && spots.length) { spots = []; allClean(); }
   };
   const up = () => { down = null; };
   root.onpointerup = up;
