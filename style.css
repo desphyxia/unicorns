@@ -226,3 +226,14 @@ html, body {
 @media (orientation: portrait) { .w-who { top: 12vh; max-width: 80vw; } .w-face { width: 7vh; height: 7vh; } }
 .w-name { z-index: 3; }
 .w-done, .w-reset { z-index: 5; }
+
+/* in the two salons the name gets its own strip under the picture, and the face picker its own strip above */
+.sec-hair .w-stage, .sec-makeup .w-stage { padding: 20vh 0 13vh; box-sizing: border-box; }
+.sec-hair .w-preview svg, .sec-makeup .w-preview svg { height: 64vh; }
+.sec-hair .w-back, .sec-makeup .w-back { height: 70vh; top: 55%; }
+.sec-hair .w-name, .sec-makeup .w-name { bottom: 2.5vh; }
+@media (orientation: portrait) {
+  .sec-hair .w-stage, .sec-makeup .w-stage { padding: 22vh 0 9vh; }
+  .sec-hair .w-preview svg, .sec-makeup .w-preview svg { height: 30vh; }
+  .sec-hair .w-back, .sec-makeup .w-back { height: 36vh; }
+}
