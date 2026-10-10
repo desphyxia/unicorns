@@ -121,3 +121,80 @@ export function moveIn() {
   const t = ctx.currentTime;
   for (let i = 0; i < 6; i++) tone(freq(i + 3), t + i * 0.08, 0.8, 0.13);
 }
+
+// ---- lake sounds ----
+export function splash() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  const len = Math.floor(ctx.sampleRate * 0.4);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass';
+  f.frequency.setValueAtTime(1800, t);
+  f.frequency.exponentialRampToValueAtTime(500, t + 0.35);
+  const g = ctx.createGain();
+  g.gain.value = 0.35;
+  src.connect(f);
+  f.connect(g);
+  g.connect(master);
+  src.start(t);
+}
+
+export function bubble() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  const base = 500 + Math.random() * 600;
+  o.frequency.setValueAtTime(base, t);
+  o.frequency.exponentialRampToValueAtTime(base * 1.8, t + 0.08);
+  g.gain.setValueAtTime(0.12, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  o.connect(g);
+  g.connect(master);
+  o.start(t);
+  o.stop(t + 0.15);
+}
+
+export function quack() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  [0, 0.17].forEach((dt) => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(520, t + dt);
+    o.frequency.exponentialRampToValueAtTime(300, t + dt + 0.12);
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 1400;
+    g.gain.setValueAtTime(0.0001, t + dt);
+    g.gain.exponentialRampToValueAtTime(0.15, t + dt + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.14);
+    o.connect(f);
+    f.connect(g);
+    g.connect(master);
+    o.start(t + dt);
+    o.stop(t + dt + 0.16);
+  });
+}
+
+export function splat() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(220, t);
+  o.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+  g.gain.setValueAtTime(0.3, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+  o.connect(g);
+  g.connect(master);
+  o.start(t);
+  o.stop(t + 0.3);
+}

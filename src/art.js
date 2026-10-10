@@ -1,5 +1,6 @@
 // All artwork is drawn in code (SVG strings), so nothing needs downloading.
 import { RAINBOW } from './cast.js';
+import { lakeSVG, duckSVG } from './lakeart.js';
 
 export const W = 1600;
 export const H = 900;
@@ -14,7 +15,7 @@ for (let row = 0; row < 3; row++) {
 }
 
 // Where characters may walk.
-export const GROUND = { x0: 50, x1: 1550, y0: 815, y1: 880 };
+export const GROUND = { x0: 50, x1: 1330, y0: 815, y1: 880 };
 export function roomBounds(r) {
   return { x0: r.x + 50, x1: r.x + r.w - 50, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
 }
@@ -194,10 +195,15 @@ export function sceneSVG() {
     <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#9ee6a6"/><stop offset="1" stop-color="#6fd08c"/>
     </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9fe3ff"/><stop offset="1" stop-color="#6fc3f5"/>
+    </linearGradient>
+    <clipPath id="waterclip"><rect x="-150" y="-300" width="300" height="278"/></clipPath>
     <linearGradient id="roofbow" x1="0" y1="0" x2="0" y2="1">
       ${RAINBOW.map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join('')}
     </linearGradient>
   </defs>
+  <g id="castleScene">
   <rect width="${W}" height="${H}" fill="url(#sky)"/>
   <circle cx="1400" cy="130" r="64" fill="#fff3a0"/><circle cx="1400" cy="130" r="86" fill="#fff3a0" opacity=".35"/>
   ${rainbowArcs}
@@ -244,11 +250,19 @@ export function sceneSVG() {
     <ellipse cx="200" cy="186" rx="34" ry="14" fill="#ffe27a"/>
   </g>
 
-  <!-- pond (right): the lake trips come later -->
-  <ellipse cx="1470" cy="800" rx="110" ry="34" fill="#8fd8ff" stroke="#fff" stroke-width="5"/>
-  <ellipse cx="1440" cy="798" rx="46" ry="9" fill="#fff" opacity=".4"/>
-  <circle cx="1500" cy="802" r="12" fill="#6edc8c"/><circle cx="1500" cy="802" r="5" fill="#ff8fc7"/>
+  <!-- pond (right): tap it to visit the lake -->
+  <g id="pond" class="pond">
+    <ellipse cx="1470" cy="800" rx="110" ry="34" fill="#8fd8ff" stroke="#fff" stroke-width="5"/>
+    <ellipse cx="1440" cy="798" rx="46" ry="9" fill="#fff" opacity=".4"/>
+    <ellipse class="pond-ring" cx="1470" cy="800" rx="110" ry="34" fill="none" stroke="#fff" stroke-width="4"/>
+    <circle cx="1520" cy="806" r="12" fill="#6edc8c"/><circle cx="1520" cy="806" r="5" fill="#ff8fc7"/>
+    <g transform="translate(1440 802) scale(.85)" class="duck-bob">${duckSVG()}</g>
+    <ellipse cx="1470" cy="795" rx="140" ry="62" fill="transparent"/>
+  </g>
+  </g>
+  ${lakeSVG()}
 
   <g id="chars"></g>
+  <g id="tools"></g>
   <g id="fx" pointer-events="none"></g>`;
 }

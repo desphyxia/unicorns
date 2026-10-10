@@ -96,3 +96,27 @@ html, body {
   .w-dot { width: 9vh; height: 9vh; }
   .w-done { width: 11vh; height: 11vh; }
 }
+
+/* lake */
+.char.inwater .shadow { fill: none; stroke: #fff; stroke-width: 3; opacity: .85; }
+.duck { cursor: pointer; }
+.pond { cursor: pointer; }
+.pond-ring { transform-box: fill-box; transform-origin: center; animation: pondring 2.6s ease-out infinite; }
+@keyframes pondring { from { transform: scale(.7); opacity: .9; } to { transform: scale(1.25); opacity: 0; } }
+.duck-bob { animation: duckbob 2s ease-in-out infinite; }
+@keyframes duckbob { 50% { translate: 0 -4px; } }
+.glint { animation: glint 3s ease-in-out infinite; }
+@keyframes glint { 0%, 100% { opacity: .15; } 50% { opacity: .9; } }
+.sway { animation: sway 4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom center; }
+@keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
+.sponge { cursor: grab; }
+
+#lakeHome {
+  position: fixed; left: 2vh; top: 2vh; z-index: 4; width: 14vh; height: 14vh; padding: 1.4vh;
+  border-radius: 50%; border: .9vh solid #fff; background: #bfe3ff; box-shadow: 0 1vh 2vh rgba(60, 80, 140, .3);
+}
+#lakeHome[hidden] { display: none; }
+#lakeHome svg { width: 100%; height: 100%; }
+
+#fade { position: fixed; inset: 0; z-index: 7; background: #fff; opacity: 0; pointer-events: none; transition: opacity .35s; }
+#fade.on { opacity: 1; pointer-events: auto; }
