@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Elsa's Castle</title>
+  <meta name="theme-color" content="#bfe3ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg id="stage" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" aria-label="Elsa's Castle"></svg>
+
+  <div id="start">
+    <h1 aria-label="Elsa's Castle"></h1>
+    <button id="play" aria-label="Play"><svg viewBox="0 0 100 100"><polygon points="34,20 34,80 82,50" fill="#fff"/></svg></button>
+  </div>
+
+  <button id="parent" aria-label="Parent corner (hold for 3 seconds)">
+    <svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" class="track"/><circle id="ring" cx="22" cy="22" r="18" class="ring"/></svg>
+  </button>
+
+  <div id="panel" hidden>
+    <div class="card">
+      <h2>Parent corner</h2>
+      <label><input type="checkbox" id="snd" checked> Sound</label>
+      <button id="reset">Reset the castle</button>
+      <button id="close">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
