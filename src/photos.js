@@ -104,4 +104,16 @@ export function initPhotos({ audio, getSource }) {
     }
   });
   albumBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); openAlbum(); });
+
+  // used by the trips: keep a picture without any flash or button press
+  return {
+    async savePhoto(source) {
+      const url = await snapshot(source);
+      if (!url) return;
+      photos.push(url);
+      if (photos.length > MAX) photos.shift();
+      persist();
+      albumBtn.classList.remove('pulse'); void albumBtn.offsetWidth; albumBtn.classList.add('pulse');
+    },
+  };
 }

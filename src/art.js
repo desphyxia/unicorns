@@ -23,7 +23,8 @@ export function roomBounds(r) {
 }
 
 // ---- wardrobe pieces: 6 styles each, all recolourable ----
-export const STYLE_COUNT = 6;
+export const STYLE_COUNT = 6;   // styles everyone starts with
+export const TOTAL_STYLES = 9;  // the last three of each kind are found on Treasure island
 
 const star = (x, y, r, fill) =>
   `<path transform="translate(${x} ${y}) scale(${r / 9})" d="M0,-9 L2.5,-2.5 L9,0 L2.5,2.5 L0,9 L-2.5,2.5 L-9,0 L-2.5,-2.5Z" fill="${fill}"/>`;
@@ -34,7 +35,7 @@ const hem = `<path d="M-30,-18 Q0,-6 30,-18" stroke="#fff" stroke-width="4" fill
 const sash = `<path d="M-13,-62 L13,-62 L14,-57 L-14,-57 Z" fill="#fff" opacity=".6"/>`;
 
 export function dressSVG(style, c) {
-  switch (style % STYLE_COUNT) {
+  switch (style % TOTAL_STYLES) {
     case 1: // puffy party dress
       return `<path d="${BODICE}" fill="${c}"/>
         <path d="M-13,-58 C-42,-58 -40,-24 -27,-27 Q-18,-20 -9,-27 Q0,-20 9,-27 Q18,-20 27,-27 C40,-24 42,-58 13,-58 Z" fill="${c}"/>
@@ -54,6 +55,22 @@ export function dressSVG(style, c) {
     case 5: // starry gown
       return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}
         ${star(-9, -42, 5, '#fff')}${star(11, -32, 4.5, '#fff')}${star(2, -52, 4, '#fff')}${star(-19, -24, 4, '#fff')}${star(19, -46, 3.5, '#fff')}`;
+    case 6: { // lemon dress
+      const lemon = (x, y, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse rx="6.5" ry="4.6" fill="#ffe14d" stroke="#e8b923" stroke-width=".8"/><path d="M3,-3 q4,-5 8,-3 q-3,5 -8,3Z" fill="#6edc8c"/></g>`;
+      return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}${lemon(-10, -44, 20)}${lemon(11, -34, -15)}${lemon(0, -58, 5)}${lemon(-20, -26, -10)}${lemon(20, -50, 25)}`;
+    }
+    case 7: // ocean waves
+      return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}<path d="M-22,-46 q5.5,-6 11,0 t11,0 t11,0 M-26,-34 q6,-6 12,0 t12,0 t12,0 M-30,-22 q6.5,-6 13,0 t13,0 t13,0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/><path transform="translate(0 -56) scale(.5)" d="M0,-9 L2.5,-2.5 L9,0 L2.5,2.5 L0,9 L-2.5,2.5 L-9,0 L-2.5,-2.5Z" fill="#ffe14d"/>`;
+    case 8: { // rainbow gown
+      const w = (y) => 12 + (y + 74) / 3;
+      const slices = RAINBOW.map((col, k) => {
+        const y0 = -74 + k * 10, y1 = y0 + 10;
+        return k < 5
+          ? `<path d="M${-w(y0)},${y0} L${w(y0)},${y0} L${w(y1)},${y1} L${-w(y1)},${y1}Z" fill="${col}"/>`
+          : `<path d="M${-w(y0)},${y0} L${w(y0)},${y0} L${w(y1)},${y1} Q0,-2 ${-w(y1)},${y1}Z" fill="${col}"/>`;
+      }).join('');
+      return `${slices}${hem}<path d="M-13,-62 L13,-62 L14,-57 L-14,-57 Z" fill="#fff" opacity=".6"/>`;
+    }
     default: // classic ball gown
       return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}`;
   }
@@ -61,12 +78,15 @@ export function dressSVG(style, c) {
 
 // Foot drawn for the left foot at the origin; toes point to -x. The right foot is mirrored.
 function foot(style, c) {
-  switch (style % STYLE_COUNT) {
+  switch (style % TOTAL_STYLES) {
     case 1: return `<path d="M8,-1 Q8,-9 0,-8 Q-8,-8 -17,-1 Q-6,2 8,-1Z" fill="${c}"/><circle cx="-1" cy="-6" r="2" fill="#fff" opacity=".8"/>`;
     case 2: return `<rect x="-6" y="-27" width="12" height="25" rx="4" fill="${c}"/><ellipse cx="-2" cy="-3" rx="10" ry="5" fill="${c}"/><rect x="-7" y="-28" width="14" height="6" rx="3" fill="#fff" opacity=".8"/>`;
     case 3: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/><circle cx="-3" cy="-7" r="3" fill="#fff"/><circle cx="3" cy="-7" r="3" fill="#fff"/><circle cx="0" cy="-7" r="1.6" fill="${c}"/>`;
     case 4: return `<ellipse cx="0" cy="-3" rx="8" ry="4" fill="${c}"/><rect x="4" y="-7" width="4" height="7" rx="2" fill="${c}"/><path d="M-6,-5 Q0,-12 6,-5" stroke="#fff" stroke-width="2" fill="none"/>`;
     case 5: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/>${star(0, -4, 3.6, '#fff')}`;
+    case 6: return `<rect x="-6" y="-27" width="12" height="25" rx="4" fill="${c}"/><ellipse cx="-2" cy="-3" rx="10" ry="5" fill="${c}"/><rect x="-7" y="-28" width="14" height="6" rx="3" fill="#fff" opacity=".8"/>${star(0, -13, 3.8, '#fff')}${star(-2, -5, 2.6, '#fff')}`;
+    case 7: return `<ellipse cx="0" cy="-4" rx="10.5" ry="6" fill="#fff"/><path d="M-9,-6 Q0,-13 9,-6" stroke="${c}" stroke-width="3" fill="none"/><rect x="-10.5" y="-2" width="21" height="4.5" rx="2.2" fill="${c}"/><circle cx="-3" cy="-8" r="1.3" fill="${c}"/><circle cx="2" cy="-9" r="1.3" fill="${c}"/>`;
+    case 8: return `<ellipse cx="0" cy="-3" rx="9.5" ry="5.2" fill="#cdeeff" opacity=".9" stroke="${c}" stroke-width="1.6"/>${star(3, -4, 3.2, '#fff')}<ellipse cx="-3" cy="-5" rx="3" ry="1.2" fill="#fff" opacity=".7"/>`;
     default: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/>`;
   }
 }
@@ -75,7 +95,7 @@ export function shoesSVG(style, c) {
 }
 
 export function tiaraSVG(style, c) {
-  switch (style % STYLE_COUNT) {
+  switch (style % TOTAL_STYLES) {
     case 1: // band with a big gem
       return `<path d="M-17,-99 Q0,-112 17,-99 L17,-104 Q0,-117 -17,-104Z" fill="${c}" stroke="#e8b923" stroke-width="1"/>
         <circle cx="0" cy="-111" r="5" fill="#ff6b8b" stroke="#fff" stroke-width="1.5"/>`;
@@ -90,6 +110,12 @@ export function tiaraSVG(style, c) {
     case 5: // bow headband
       return `<path d="M-18,-97 Q0,-114 18,-97" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>
         <path d="M11,-107 L23,-115 L23,-99 Z M11,-107 L-1,-115 L-1,-99 Z" fill="${c}"/><circle cx="11" cy="-107" r="3.5" fill="#fff"/>`;
+    case 6: // pearl crown
+      return `<path d="M-13,-103 L-9,-114 L-4,-106 L0,-118 L4,-106 L9,-114 L13,-103 Z" fill="${c}" stroke="#e8b923" stroke-width="1"/><circle cx="-9" cy="-114.5" r="3" fill="#fff" stroke="#e8dcd2" stroke-width=".8"/><circle cx="0" cy="-118.5" r="3.2" fill="#fff" stroke="#e8dcd2" stroke-width=".8"/><circle cx="9" cy="-114.5" r="3" fill="#fff" stroke="#e8dcd2" stroke-width=".8"/>${[-8, 0, 8].map((x) => `<circle cx="${x}" cy="-104.5" r="2" fill="#ff8fc7"/>`).join('')}`;
+    case 7: // butterfly
+      return `<path d="M-17,-97 Q0,-110 17,-97" stroke="${c}" stroke-width="3" fill="none"/><g transform="translate(0 -110)"><ellipse cx="-9" cy="-4" rx="9" ry="6.5" fill="${c}" transform="rotate(-20 -9 -4)"/><ellipse cx="9" cy="-4" rx="9" ry="6.5" fill="${c}" transform="rotate(20 9 -4)"/><ellipse cx="-6" cy="4" rx="6" ry="4.5" fill="${c}" opacity=".8" transform="rotate(25 -6 4)"/><ellipse cx="6" cy="4" rx="6" ry="4.5" fill="${c}" opacity=".8" transform="rotate(-25 6 4)"/><rect x="-1.6" y="-8" width="3.2" height="16" rx="1.6" fill="#6b4a7a"/></g>`;
+    case 8: // rainbow halo
+      return RAINBOW.map((col, i) => `<path d="M${-18 + i * 2.6},-98 A${18 - i * 2.6},${18 - i * 2.6} 0 0 1 ${18 - i * 2.6},-98" stroke="${col}" stroke-width="3" fill="none" stroke-linecap="round"/>`).join('') + `<circle cx="0" cy="-101" r="2.6" fill="${c}"/>`;
     default: // classic crown
       return `<path d="M-13,-103 L-9,-114 L-4,-106 L0,-118 L4,-106 L9,-114 L13,-103 Z" fill="${c}" stroke="#e8b923" stroke-width="1"/>`;
   }

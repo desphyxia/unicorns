@@ -1,8 +1,8 @@
 import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
-import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, GROUND, roomBounds } from './art.js';
+import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, GROUND, roomBounds, STYLE_COUNT, TOTAL_STYLES } from './art.js';
 import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from './lakeart.js';
 import { openWardrobe } from './wardrobe.js';
-import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, isMuddy } from './trip.js';
+import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
 import { STALL_X, STALL_Y } from './stableart.js';
 import { initSky, updateSky, isNight } from './sky.js';
 import * as party from './party.js';
@@ -29,7 +29,7 @@ const picker = document.getElementById('picker');
 
 // ---------- saved state ----------
 const KEY = 'elsas-castle-v1';
-let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, hinted: false, lakeHinted: false };
+let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* ignore */ } }
 
@@ -352,7 +352,7 @@ function tap(c) {
   if (mode === 'stable') { hearts(c.x + 30, c.y - 120, 4); audio.neigh(); return; }
   if (c.kind === 'unicorn') {
     audio.neigh();
-    if (c.rider && mode === 'castle') openPicker(c);
+    if (c.rider && mode === 'castle') openPicker();
     return;
   }
   audio.chime(3 + (c.index * 2) % 7);
@@ -362,6 +362,8 @@ function tap(c) {
     def: c.def,
     name: nameOf(c.def),
     look: saved.looks[c.def.id],
+    unlocked: unlockedMap(),
+    fresh: saved.newItems.splice(0),
     onChange: (look) => {
       saved.looks[c.def.id] = look;
       save();
@@ -404,50 +406,102 @@ function dismount(u) {
 const DOWN_ICON = '<svg viewBox="0 0 160 120"><rect width="160" height="120" rx="18" fill="#ffe3f4"/><path d="M80,18 v62 M52,56 l28,30 28,-30" stroke="#ff6b8b" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BACK_ICON = '<svg viewBox="0 0 100 100"><path d="M60,24 l-28,26 28,26" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-function openPicker(u) {
+// ---------- rewards: clothes from the treasure chest, gold coins ----------
+const CATS = ['dress', 'shoes', 'tiara'];
+function lockedItems() {
+  const list = [];
+  CATS.forEach((cat) => { for (let idx = STYLE_COUNT; idx < TOTAL_STYLES; idx++) if (!saved.unlocked.includes(`${cat}:${idx}`)) list.push({ cat, idx }); });
+  return list;
+}
+function unlockedMap() {
+  const m = { dress: [], shoes: [], tiara: [] };
+  saved.unlocked.forEach((k) => { const [cat, idx] = k.split(':'); if (m[cat]) m[cat].push(+idx); });
+  Object.values(m).forEach((a) => a.sort((x, y) => x - y));
+  return m;
+}
+const coinsEl = document.getElementById('coins');
+const coinN = document.getElementById('coinN');
+function showCoins(bump) {
+  coinN.textContent = saved.coins;
+  if (bump) { coinsEl.classList.remove('bump'); void coinsEl.offsetWidth; coinsEl.classList.add('bump'); }
+}
+showCoins(false);
+
+// ---------- trips ----------
+function openPicker() {
+  const riding = chars.some((c) => c.kind === 'unicorn' && c.rider);
   picker.innerHTML = `<button class="round-btn pk-back" data-act="back" aria-label="Back">${BACK_ICON}</button>
-    <div class="pk-grid">${DEST_IDS.map((id) => `<button class="pk-btn" data-dest="${id}">${destIcon(id)}</button>`).join('')}<button class="pk-btn" data-act="down">${DOWN_ICON}</button></div>`;
+    <div class="pk-grid" style="grid-template-columns:repeat(${riding ? 4 : 3},1fr);width:${riding ? 'min(92vw,170vh)' : 'min(80vw,118vh)'}">${DEST_IDS.map((id) => `<button class="pk-btn" data-dest="${id}">${destIcon(id)}</button>`).join('')}${riding ? `<button class="pk-btn" data-act="down">${DOWN_ICON}</button>` : ''}</div>`;
   picker.hidden = false;
-  picker._u = u;
 }
 picker.onpointerdown = (e) => {
   const b = e.target.closest('button');
   if (!b) return;
-  const u = picker._u;
   picker.hidden = true;
-  if (b.dataset.act === 'down') { audio.pop(); dismount(u); return; }
-  if (b.dataset.dest && u && u.rider) { audio.moveIn(); goTo(() => beginTrip(u, b.dataset.dest)); }
+  if (b.dataset.act === 'down') { audio.pop(); chars.forEach((u) => { if (u.rider) dismount(u); }); return; }
+  if (b.dataset.dest) { audio.moveIn(); goTo(() => beginTrip(b.dataset.dest)); }
 };
 
-const TRIP_SECONDS = Number(new URLSearchParams(location.search).get('tripseconds')) || 28; // ?tripseconds=5 for quick testing
-let tripUnicorn = null;
-function beginTrip(u, dest) {
+// who comes along: riders already on a unicorn first, then Elsa, then friends, until the trip is full
+let tripPairs = [];
+function buildPairs(n) {
+  const pairs = chars.filter((u) => u.kind === 'unicorn' && u.rider).map((u) => ({ u, p: u.rider }));
+  pairs.sort((a, b) => (b.p.def.id === 'elsa') - (a.p.def.id === 'elsa'));
+  const freeP = chars.filter((c) => c.kind === 'princess' && !c.mount).sort((a, b) => (b.def.id === 'elsa') - (a.def.id === 'elsa') || Math.random() - 0.5);
+  const freeU = chars.filter((c) => c.kind === 'unicorn' && !c.rider);
+  while (pairs.length < n && freeP.length && freeU.length) {
+    const p = freeP.shift();
+    freeU.sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y));
+    const u = freeU.shift();
+    mount(p, u);
+    pairs.push({ u, p });
+  }
+  pairs.slice(n).forEach(({ u }) => dismount(u));
+  return pairs.slice(0, n);
+}
+
+function beginTrip(dest) {
   party.stop(true);
+  tripPairs = buildPairs(groupSize(dest));
   mode = 'trip';
-  tripUnicorn = u;
   svg.style.display = 'none';
   lakeHome.hidden = false;
   startTrip({
     dest,
-    seconds: TRIP_SECONDS,
-    unicorn: u.def,
-    princess: u.rider.def,
-    look: saved.looks[u.rider.def.id],
-    onArrive: (id) => {
-      if (!isMuddy(id)) return;
-      for (const c of [u, u.rider]) { c.dirt = true; saved.dirt[c.def.id] = 1; }
-      save();
-    },
+    pairs: tripPairs.map(({ u, p }) => ({ unicorn: u.def, princess: p.def, look: saved.looks[p.def.id] })),
+    locked: lockedItems(),
+    onPhoto: (source) => photosApi.savePhoto(source),
+    onDone: () => { if (mode === 'trip' && !busy) { audio.moveIn(); goTo(endTripScene); } },
   });
 }
 
 function endTripScene() {
-  endTrip();
+  const r = endTrip();
   mode = 'castle';
   svg.style.display = '';
   lakeHome.hidden = true;
-  if (tripUnicorn) dismount(tripUnicorn);
-  tripUnicorn = null;
+  const pairs = tripPairs;
+  tripPairs = [];
+  pairs.forEach(({ u }) => dismount(u));
+  if (r.coins) saved.coins += r.coins;
+  if (r.finished) {
+    if (r.muddy) pairs.forEach(({ u, p }) => [u, p].forEach((c) => { c.dirt = true; saved.dirt[c.def.id] = 1; }));
+    if (r.unlock) {
+      const key = `${r.unlock.cat}:${r.unlock.idx}`;
+      if (!saved.unlocked.includes(key)) saved.unlocked.push(key);
+      saved.newItems.push(key);
+    }
+    if (r.crowns) {
+      pairs.forEach(({ p }, i) => { // the flower crowns stay on
+        const look = { ...(saved.looks[p.def.id] || {}), tiara: 2, tiaraColor: RAINBOW[(i * 4) % 6] };
+        saved.looks[p.def.id] = look;
+        p.art.innerHTML = princessSVG(p.def, look);
+        p.body = p.art.parentNode;
+      });
+    }
+  }
+  save();
+  showCoins(true);
 }
 
 // ---------- the lake ----------
@@ -678,7 +732,7 @@ function frame(now) {
   party.update(dt, t);
   stableTools.update(dt);
   const partyHidden = mode !== 'castle';
-  if (partyBtn.hidden !== partyHidden) { partyBtn.hidden = partyHidden; tripBtn.hidden = partyHidden; }
+  if (partyBtn.hidden !== partyHidden) { partyBtn.hidden = partyHidden; tripBtn.hidden = partyHidden; coinsEl.hidden = partyHidden; }
 
   for (const c of chars) {
     if (c.mount || c.hidden) continue;
@@ -771,23 +825,17 @@ const ctx = { svg, layer, tools, el, chars, audio, rand, clamp, toSvg, sparkle, 
 initSky(ctx);
 party.initParty(ctx);
 const stableTools = initStable(ctx);
-initPhotos({ audio, getSource: () => (mode === 'trip' ? document.getElementById('trip') : svg) });
+const photosApi = initPhotos({ audio, getSource: () => (mode === 'trip' ? document.getElementById('trip') : svg) });
 
 const partyBtn = document.getElementById('partyBtn');
 const tripBtn = document.getElementById('tripBtn');
-// one tap to go on a trip: Elsa (or whoever is free) hops on a unicorn and the trip menu opens
+// one tap opens the trip menu; whoever is needed for the chosen trip joins in automatically
 tripBtn.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   if (busy || mode !== 'castle') return;
   party.stop(true);
-  let u = chars.find((c) => c.kind === 'unicorn' && c.rider);
-  if (!u) {
-    const p = chars.find((c) => c.def.id === 'elsa' && !c.mount) || chars.find((c) => c.kind === 'princess' && !c.mount);
-    u = chars.filter((c) => c.kind === 'unicorn' && !c.rider).sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y))[0];
-    mount(p, u);
-  }
   audio.neigh();
-  openPicker(u);
+  openPicker();
 });
 function todayKey() {
   const d = new Date();

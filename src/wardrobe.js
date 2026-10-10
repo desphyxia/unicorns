@@ -13,10 +13,12 @@ const CHECK = '<svg viewBox="0 0 100 100"><path d="M24,52 L43,71 L78,30" stroke=
 
 const thumb = (def, look, view) => `<svg viewBox="${view}">${princessSVG(def, look)}</svg>`;
 
-export function openWardrobe({ def, name, look: startLook, onChange, onClose }) {
+export function openWardrobe({ def, name, look: startLook, unlocked = {}, fresh = [], onChange, onClose }) {
   const root = document.getElementById('wardrobe');
   const look = { ...defaultLook(def), ...startLook };
   let cat = CATS[0];
+  // everyone starts with 6 styles; treasure adds more
+  const avail = (c) => [...Array.from({ length: STYLE_COUNT }, (_, i) => i), ...(unlocked[c.key] || [])];
 
   function sparkles(box) {
     for (let i = 0; i < 10; i++) {
@@ -37,7 +39,7 @@ export function openWardrobe({ def, name, look: startLook, onChange, onClose }) 
       <div class="w-stage"><div class="w-preview ${animate ? 'twirl' : ''}"><svg viewBox="-60 -135 120 145">${princessSVG(def, look)}</svg></div></div>
       <div class="w-side">
         <div class="w-tabs">${CATS.map((c, i) => `<button class="w-btn w-tab ${c === cat ? 'sel' : ''}" data-tab="${i}">${thumb(def, look, c.view)}</button>`).join('')}</div>
-        <div class="w-styles">${Array.from({ length: STYLE_COUNT }, (_, i) => `<button class="w-btn ${look[cat.key] === i ? 'sel' : ''}" data-style="${i}">${thumb(def, { ...look, [cat.key]: i }, cat.view)}</button>`).join('')}</div>
+        <div class="w-styles ${avail(cat).length > 6 ? 'many' : ''}">${avail(cat).map((i) => `<button class="w-btn ${look[cat.key] === i ? 'sel' : ''} ${fresh.includes(`${cat.key}:${i}`) ? 'new' : ''}" data-style="${i}">${thumb(def, { ...look, [cat.key]: i }, cat.view)}</button>`).join('')}</div>
         <div class="w-colors">${cat.palette.map((c) => `<button class="w-dot ${look[cat.color] === c ? 'sel' : ''}" data-color="${c}" style="background:${c}"></button>`).join('')}</div>
       </div>
       <button class="w-done" aria-label="Done">${CHECK}</button>`;

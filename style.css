@@ -184,3 +184,20 @@ html, body {
 #panel select { font: inherit; padding: 6px; border-radius: 10px; border: 2px solid #e9ddff; background: #fff; }
 
 #tripBtn { background: #5cc8ff !important; }
+
+/* five trips */
+.pk-grid { gap: 2.4vh !important; }
+.w-styles.many .w-btn svg { height: 11vh; }
+.w-btn.new { animation: newpulse 1.2s ease-in-out infinite; box-shadow: 0 0 0 .8vh #ffd23f, 0 0 3vh #ffd23f; }
+@keyframes newpulse { 50% { transform: scale(1.06); } }
+.uwing { animation: wingflap .32s ease-in-out infinite alternate; }
+.uwing + .uwing { animation-direction: alternate-reverse; }
+@keyframes wingflap { from { transform: rotate(16deg); } to { transform: rotate(-24deg); } }
+.wavy { animation: wavy 3.2s ease-in-out infinite alternate; }
+@keyframes wavy { from { translate: -18px 0; opacity: .25; } to { translate: 18px 0; opacity: .7; } }
+.frond { animation: frond 3.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes frond { from { rotate: -4deg; } to { rotate: 4deg; } }
+#coins { position: fixed; left: 1.5vh; top: 1.5vh; z-index: 4; display: flex; align-items: center; gap: 1vh; padding: .6vh 2vh .6vh .8vh; border-radius: 6vh; background: rgba(255, 255, 255, .88); box-shadow: 0 .6vh 1.6vh rgba(120, 80, 20, .25); font-weight: 800; font-size: 5vh; color: #d99a00; }
+#coins[hidden] { display: none; }
+#coins svg { width: 6.4vh; height: 6.4vh; }
+#coins.bump { animation: pulse2 .6s ease-out; }
