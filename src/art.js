@@ -6,10 +6,10 @@ import { stableSVG } from './stableart.js';
 export const W = 1600;
 export const H = 900;
 
-// Castle rooms: a stepped dollhouse with 2 + 4 + 4 = 10 rooms.
+// Castle rooms: a stepped dollhouse with 2 + 4 + 3 = 9 bedrooms (the last cell is the bathroom).
 export const ROOM_COLORS = ['#ffb3c7', '#ffcf9e', '#fff0a0', '#bfeabf', '#a9d8ff', '#d3bdff', '#ffc2e2', '#ffe0b8', '#c8f0ff', '#e0cfff'];
 export const ROOMS = [];
-[{ y: 220, cols: 2, x0: 590 }, { y: 400, cols: 4, x0: 380 }, { y: 580, cols: 4, x0: 380 }].forEach((row) => {
+[{ y: 220, cols: 2, x0: 590 }, { y: 400, cols: 4, x0: 380 }, { y: 580, cols: 3, x0: 380 }].forEach((row) => {
   for (let c = 0; c < row.cols; c++) {
     const i = ROOMS.length;
     ROOMS.push({ i, x: row.x0 + c * 210, y: row.y, w: 210, h: 180, color: ROOM_COLORS[i] });
@@ -382,17 +382,25 @@ function room(r) {
   </g>`;
 }
 
-// The two special rooms in the top corners of the castle: hairdressing (left) and makeup (right).
+// The special rooms: hairdressing and makeup in the top corners, and the bathroom (teeth brushing) bottom right.
 export const SALONS = [
   { i: 'hair', salon: true, x: 380, y: 220, w: 210, h: 180 },
   { i: 'makeup', salon: true, x: 1010, y: 220, w: 210, h: 180 },
+  { i: 'bath', salon: true, x: 1010, y: 580, w: 210, h: 180 },
 ];
 
 function salonRoom(r) {
   const fy = r.y + r.h - 22;
   const cx = r.x + r.w / 2;
   const hair = r.i === 'hair';
-  const props = hair
+  const bath = r.i === 'bath';
+  const props = bath
+    ? `<rect x="${r.x + 18}" y="${r.y + 26}" width="76" height="86" rx="10" fill="#fff" stroke="#8fd3ff" stroke-width="5"/><rect x="${r.x + 26}" y="${r.y + 34}" width="60" height="70" rx="6" fill="#eaf6ff"/><path d="M${r.x + 34},${r.y + 48} L${r.x + 52},${r.y + 40}" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+       <rect x="${r.x + 22}" y="${fy - 54}" width="68" height="20" rx="8" fill="#fff"/><rect x="${r.x + 30}" y="${fy - 36}" width="52" height="36" rx="6" fill="#bfe3ff"/>
+       <g transform="translate(${r.x + 128} ${fy})"><rect x="-4" y="-76" width="8" height="76" rx="3" fill="#c9a0ff"/><rect x="-28" y="-72" width="56" height="12" rx="6" fill="#fff"/><g transform="translate(-14 -72) rotate(-14)"><rect x="-3" y="-34" width="6" height="34" rx="3" fill="#ff6b8b"/><rect x="-5" y="-42" width="10" height="12" rx="3" fill="#fff"/></g><g transform="translate(14 -72) rotate(12)"><rect x="-3" y="-34" width="6" height="34" rx="3" fill="#5cc8ff"/><rect x="-5" y="-42" width="10" height="12" rx="3" fill="#fff"/></g></g>
+       <g transform="translate(${r.x + 176} ${fy})"><rect x="-10" y="-52" width="20" height="52" rx="6" fill="#ff8fc7"/><rect x="-6" y="-60" width="12" height="10" rx="3" fill="#fff"/><rect x="-8" y="-36" width="16" height="12" rx="3" fill="#fff"/></g>
+       ${Array.from({ length: 4 }, (_, k) => `<circle cx="${r.x + 110 + k * 22}" cy="${r.y + 40 + (k % 2) * 14}" r="${6 - k}" fill="#fff" stroke="#bfe3ff" stroke-width="1.5"/>`).join('')}`
+    : hair
     ? `<ellipse cx="${cx}" cy="${r.y + 74}" rx="52" ry="60" fill="#fff" stroke="#ffb3d9" stroke-width="5"/><ellipse cx="${cx}" cy="${r.y + 74}" rx="44" ry="52" fill="#eaf6ff"/><path d="M${cx - 28},${r.y + 52} Q${cx - 16},${r.y + 36} ${cx},${r.y + 34}" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".9"/>
        <g transform="translate(${r.x + 36} ${r.y + 40})"><circle cx="-9" cy="14" r="8" fill="none" stroke="#ff6b8b" stroke-width="4"/><circle cx="9" cy="14" r="8" fill="none" stroke="#ff6b8b" stroke-width="4"/><path d="M-6,8 L12,-16 M6,8 L-12,-16" stroke="#c9b0ff" stroke-width="5" stroke-linecap="round"/></g>
        <rect x="${cx - 34}" y="${fy - 40}" width="68" height="18" rx="9" fill="#ff8fc7"/><rect x="${cx - 30}" y="${fy - 96}" width="60" height="58" rx="18" fill="#ff8fc7"/><rect x="${cx - 24}" y="${fy - 90}" width="48" height="46" rx="14" fill="#ffb3d9"/><rect x="${cx - 5}" y="${fy - 24}" width="10" height="24" fill="#c9a0ff"/><ellipse cx="${cx}" cy="${fy}" rx="26" ry="6" fill="#c9a0ff"/>
@@ -405,7 +413,7 @@ function salonRoom(r) {
        <g transform="translate(${r.x + 148} ${fy - 40})"><rect x="-9" y="-16" width="18" height="16" rx="4" fill="#fff6a8" stroke="#ffd96a" stroke-width="2"/><path d="M-5,-16 V-34 M0,-16 V-38 M5,-16 V-33" stroke="#ff9a5c" stroke-width="3.4" stroke-linecap="round"/></g>
        <ellipse cx="${r.x + 110}" cy="${fy - 40}" rx="17" ry="7" fill="#ffd1e8" stroke="#fff" stroke-width="2"/><circle cx="${r.x + 110}" cy="${fy - 43}" r="6" fill="#ff8fc7"/>`;
   return `<g class="salon" data-salon="${r.i}" style="cursor:pointer">
-    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${hair ? '#ffd0e6' : '#e0d2ff'}"/>
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${bath ? '#cdeeff' : hair ? '#ffd0e6' : '#e0d2ff'}"/>
     <rect x="${r.x}" y="${fy}" width="${r.w}" height="22" fill="#ffffff" opacity=".45"/>
     ${props}
     <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#fff" stroke-width="6"/>

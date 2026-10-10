@@ -2,6 +2,7 @@ import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
 import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, SALONS, GROUND, roomBounds, STYLE_COUNT, TOTAL_STYLES } from './art.js';
 import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from './lakeart.js';
 import { openWardrobe } from './wardrobe.js';
+import { openTeeth } from './teeth.js';
 import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
 import { STALL_X, STALL_Y } from './stableart.js';
 import { initSky, updateSky, isNight } from './sky.js';
@@ -95,7 +96,7 @@ function make(def, kind, index) {
     home: null, moving: false, dragging: false, hopT: -1, phase: rand(0, 6),
     rider: null, mount: null, hidden: false, sleeping: false, lie: 0, lieRot: 0, lieShown: false, zzzT: 0, munch: 0, joy: 0, groom: 0, water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
   };
-  c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) ? saved.homes[def.id] : null;
+  c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) && saved.homes[def.id] < ROOMS.length ? saved.homes[def.id] : null; // (the old tenth room is the bathroom now)
   const b = boundsOf(c);
   c.x = c.tx = rand(b.x0, b.x1);
   c.y = c.ty = rand(b.y0, b.y1);
@@ -406,10 +407,18 @@ function openStyling(c) {
   });
 }
 
-// the hair salon and the makeup room: pick a princess, then style her hair or face
+// the hair salon, makeup room and bathroom: pick a princess, then style her hair or face, or brush her teeth
 function openSalon(section, who) {
   const princesses = chars.filter((k) => k.kind === 'princess');
   const start = Math.max(0, princesses.findIndex((k) => who ? k === who : k.def.id === 'elsa'));
+  if (section === 'bath') {
+    openTeeth({
+      cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
+      index: start,
+      onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
+    });
+    return;
+  }
   openWardrobe({
     section: section === 'hair' ? 'hair' : 'makeup',
     cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),

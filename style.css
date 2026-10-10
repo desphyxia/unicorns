@@ -237,3 +237,25 @@ html, body {
   .sec-hair .w-preview svg, .sec-makeup .w-preview svg { height: 30vh; }
   .sec-hair .w-back, .sec-makeup .w-back { height: 36vh; }
 }
+
+/* the bathroom: brush the princess's teeth */
+#teeth { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; background: linear-gradient(160deg, #cdeeff, #e8f8ff 40%, #e6d8ff); touch-action: none; }
+#teeth[hidden] { display: none; }
+#teeth .w-stage { padding: 20vh 0 13vh; box-sizing: border-box; }
+#teeth .w-preview svg { height: 62vh; }
+#teeth .w-name { bottom: 2.5vh; }
+#teeth .w-done { z-index: 5; }
+.t-side { flex: 1.2; height: 100%; display: grid; place-items: center; }
+.t-mouth { overflow: visible; width: min(52vw, 120vh); height: auto; max-height: 86vh; touch-action: none; filter: drop-shadow(0 2vh 2vh rgba(120, 60, 160, .2)); }
+#teeth.shiny .t-mouth rect { fill: #fffbe0; }
+.foam { animation: foamfade .9s ease-out forwards; pointer-events: none; }
+@keyframes foamfade { to { opacity: 0; transform: translateY(-14px); } }
+.tstar { pointer-events: none; animation: tstar .8s ease-out forwards; }
+@keyframes tstar { to { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@media (orientation: portrait) {
+  #teeth { flex-direction: column; justify-content: center; }
+  #teeth .w-stage { flex: 0 0 auto; height: auto; padding: 22vh 0 9vh; }
+  #teeth .w-preview svg { height: 28vh; }
+  .t-side { flex: 0 0 auto; height: auto; }
+  .t-mouth { width: 90vw; }
+}
