@@ -55,7 +55,7 @@ export function lakeSVG() {
 
   return `<g id="lakeScene" style="display:none">
   <rect width="1600" height="900" fill="url(#sky)"/>
-  <circle cx="240" cy="120" r="62" fill="#fff3a0"/><circle cx="240" cy="120" r="84" fill="#fff3a0" opacity=".35"/>
+  <g id="sunL"><circle cx="240" cy="120" r="62" fill="#fff3a0"/><circle cx="240" cy="120" r="84" fill="#fff3a0" opacity=".35"/></g>
   ${arcs}
   <g class="cloud"><ellipse cx="1180" cy="120" rx="80" ry="28" fill="#fff" opacity=".9"/><circle cx="1150" cy="100" r="30" fill="#fff" opacity=".9"/><circle cx="1205" cy="92" r="36" fill="#fff" opacity=".9"/></g>
   <g class="cloud" style="animation-delay:-9s"><ellipse cx="520" cy="80" rx="70" ry="24" fill="#fff" opacity=".9"/><circle cx="495" cy="64" r="26" fill="#fff" opacity=".9"/><circle cx="545" cy="58" r="30" fill="#fff" opacity=".9"/></g>

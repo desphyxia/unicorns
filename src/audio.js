@@ -198,3 +198,49 @@ export function splat() {
   o.start(t);
   o.stop(t + 0.3);
 }
+
+// ---- extras: camera, munching, birthday song ----
+function noiseBurst(t, dur, freq, vol, q = 1) {
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass';
+  f.frequency.value = freq;
+  f.Q.value = q;
+  const g = ctx.createGain();
+  g.gain.value = vol;
+  src.connect(f);
+  f.connect(g);
+  g.connect(master);
+  src.start(t);
+}
+
+export function shutter() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  noiseBurst(t, 0.05, 3000, 0.5, 2);
+  noiseBurst(t + 0.09, 0.07, 1800, 0.4, 2);
+  tone(1320, t + 0.16, 0.5, 0.1);
+}
+
+export function munch() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  for (let i = 0; i < 4; i++) noiseBurst(t + i * 0.13, 0.08, 500 + Math.random() * 300, 0.5, 1.5);
+}
+
+// Happy Birthday in C major (semitones above middle C, seconds)
+const BIRTHDAY = [[7, .3], [7, .15], [9, .45], [7, .45], [12, .45], [11, .9], [7, .3], [7, .15], [9, .45], [7, .45], [14, .45], [12, .9],
+  [7, .3], [7, .15], [19, .45], [16, .45], [12, .45], [11, .45], [9, .6], [17, .3], [17, .15], [16, .45], [12, .45], [14, .45], [12, 1]];
+export function birthday() {
+  if (!ctx || !enabled) return;
+  let t = ctx.currentTime + 0.1;
+  for (const [semi, dur] of BIRTHDAY) {
+    tone(261.63 * Math.pow(2, semi / 12), t, dur * 1.6, 0.14, 'triangle');
+    t += dur * 1.05;
+  }
+}

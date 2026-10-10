@@ -33,10 +33,21 @@
     <svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" class="track"/><circle id="ring" cx="22" cy="22" r="18" class="ring"/></svg>
   </button>
 
+  <div id="dock">
+    <button id="camBtn" aria-label="Take a photo"><svg viewBox="0 0 120 100"><rect x="8" y="26" width="104" height="66" rx="16" fill="#fff"/><rect x="38" y="12" width="44" height="20" rx="8" fill="#fff"/><circle cx="60" cy="60" r="26" fill="#a98bff"/><circle cx="60" cy="60" r="15" fill="#ffd1e8"/><circle cx="52" cy="52" r="5" fill="#fff" opacity=".8"/><circle cx="98" cy="40" r="5" fill="#ff6b8b"/></svg></button>
+    <button id="albumBtn" aria-label="Photo book"><svg viewBox="0 0 120 100"><rect x="14" y="10" width="92" height="80" rx="12" fill="#ff8fc7"/><rect x="26" y="20" width="68" height="60" rx="6" fill="#fff"/><circle cx="46" cy="40" r="8" fill="#ffd84d"/><path d="M26,80 L50,54 L66,70 L78,58 L94,80Z" fill="#6edc8c"/></svg></button>
+    <button id="partyBtn" aria-label="Party"><svg viewBox="0 0 120 100"><rect x="22" y="52" width="76" height="38" rx="10" fill="#ffc2e2"/><rect x="34" y="34" width="52" height="24" rx="8" fill="#fff"/><path d="M22,56 q9,12 18,0 t18,0 t18,0 t18,0" stroke="#fff" stroke-width="7" fill="none"/><rect x="45" y="16" width="6" height="20" rx="3" fill="#5cc8ff"/><rect x="57" y="16" width="6" height="20" rx="3" fill="#ffd23f"/><rect x="69" y="16" width="6" height="20" rx="3" fill="#6edc8c"/><ellipse cx="48" cy="11" rx="4" ry="6" fill="#ffb02e"/><ellipse cx="60" cy="11" rx="4" ry="6" fill="#ffb02e"/><ellipse cx="72" cy="11" rx="4" ry="6" fill="#ffb02e"/></svg></button>
+  </div>
+  <div id="album" hidden></div>
+  <div id="flash"></div>
+  <div id="banner" hidden></div>
+
   <div id="panel" hidden>
     <div class="card">
       <h2>Parent corner</h2>
       <label><input type="checkbox" id="snd" checked> Sound</label>
+      <div id="names"></div>
+      <button id="clearPhotos">Delete all photos</button>
       <button id="reset">Reset the castle</button>
       <button id="close">Close</button>
     </div>

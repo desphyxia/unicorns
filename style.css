@@ -55,7 +55,7 @@ html, body {
 
 #panel { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(60, 30, 90, .4); }
 #panel[hidden] { display: none; }
-#panel .card { background: #fff; border-radius: 24px; padding: 24px 32px; display: grid; gap: 16px; min-width: 260px; font-size: 20px; color: #4a3a66; }
+#panel .card { background: #fff; border-radius: 24px; padding: 24px 32px; display: grid; gap: 16px; min-width: 260px; max-height: 88vh; overflow: auto; font-size: 20px; color: #4a3a66; touch-action: pan-y; }
 #panel h2 { margin: 0; font-size: 24px; }
 #panel button { font: inherit; padding: 12px 18px; border-radius: 14px; border: 0; background: #e9ddff; color: #4a3a66; }
 #panel input { width: 24px; height: 24px; vertical-align: middle; }
@@ -139,3 +139,46 @@ html, body {
 .pk-btn:active { transform: scale(.96); }
 .round-btn { position: absolute; left: 3vh; top: 3vh; width: 14vh; height: 14vh; border-radius: 50%; border: .9vh solid #fff; background: #a98bff; padding: 2vh; box-shadow: 0 1vh 2vh rgba(60, 40, 120, .3); }
 .round-btn svg { width: 100%; height: 100%; }
+
+/* extras */
+#dock { position: fixed; left: 1.5vh; top: 50%; transform: translateY(-50%); z-index: 4; display: grid; gap: 1.6vh; }
+#dock button { width: 11vh; height: 11vh; padding: 1.4vh; border-radius: 50%; border: .8vh solid #fff; background: #a98bff; box-shadow: 0 .8vh 1.6vh rgba(60, 40, 120, .28); }
+#dock button svg { width: 100%; height: 100%; }
+#camBtn { background: #ff8fc7 !important; }
+#partyBtn { background: #ffd23f !important; }
+#dock button[hidden] { display: none; }
+#albumBtn.pulse { animation: pulse2 .6s ease-out; }
+@keyframes pulse2 { 40% { transform: scale(1.25); } }
+#flash { position: fixed; inset: 0; z-index: 9; background: #fff; opacity: 0; pointer-events: none; }
+#flash.go { animation: flash .45s ease-out; }
+@keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+.fly-photo { position: fixed; left: 50%; top: 50%; width: 46vw; margin: -13vw 0 0 -23vw; z-index: 9; border: 1.2vh solid #fff; border-radius: 1.6vh; box-shadow: 0 1vh 3vh rgba(0, 0, 0, .3); pointer-events: none; transition: transform .9s cubic-bezier(.5, 0, .8, .5), opacity .9s; }
+
+#album { position: fixed; inset: 0; z-index: 8; overflow: auto; background: linear-gradient(160deg, #ffd1e8, #ffe9b8 30%, #cdf5cf 55%, #bfe3ff 80%, #dcc9ff); touch-action: pan-y; }
+#album[hidden] { display: none; }
+.al-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3vh; padding: 4vh 4vw 4vh 20vh; }
+.al-item { background: #fff; border: 0; padding: 1.2vh; border-radius: 1.6vh; box-shadow: 0 1vh 2vh rgba(120, 60, 160, .2); transform: rotate(var(--r)); }
+.al-item img { width: 100%; display: block; border-radius: .8vh; }
+.al-empty { grid-column: 1 / -1; display: grid; place-items: center; height: 70vh; }
+.al-empty svg { width: 30vh; opacity: .8; }
+.al-back { position: fixed; z-index: 9; }
+.al-full { position: fixed; inset: 0; z-index: 10; background: rgba(40, 20, 70, .85); display: grid; place-items: center; }
+.al-full img { max-width: 94vw; max-height: 90vh; border: 1.4vh solid #fff; border-radius: 2vh; box-shadow: 0 2vh 6vh rgba(0, 0, 0, .5); }
+
+#banner { position: fixed; top: 2vh; left: 50%; transform: translateX(-50%); z-index: 4; padding: 1vh 4vh; border-radius: 6vh; background: rgba(255, 255, 255, .85); font-size: 6vh; font-weight: 800; white-space: nowrap; color: #ff6b8b; text-shadow: 0 .4vh 0 #ffd23f; animation: bounce2 1.4s ease-in-out infinite; pointer-events: none; }
+#banner[hidden] { display: none; }
+@keyframes bounce2 { 50% { transform: translateX(-50%) translateY(-1vh) rotate(-1deg); } }
+
+.candle .flame { animation: flicker .25s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center bottom; cursor: pointer; }
+@keyframes flicker { from { scale: 1 1; } to { scale: .88 1.12; } }
+.twinkle { animation: twinkle 2.4s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.w-name { position: absolute; bottom: 3vh; left: 0; right: 0; text-align: center; font-size: 7vh; font-weight: 800; text-shadow: 0 .5vh 0 #fff; pointer-events: none; }
+.w-stage { position: relative; }
+
+#panel .pn-head { font-weight: 800; }
+#panel .pn-row { display: grid; grid-template-columns: 24px 1fr 4.5em 4em; gap: 8px; align-items: center; margin-top: 8px; }
+#panel .pn-dot { width: 20px; height: 20px; border-radius: 50%; }
+#panel input.pn-name { width: auto; height: auto; font: inherit; padding: 6px 10px; border-radius: 10px; border: 2px solid #e9ddff; min-width: 0; }
+#panel select { font: inherit; padding: 6px; border-radius: 10px; border: 2px solid #e9ddff; background: #fff; }

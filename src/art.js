@@ -1,6 +1,7 @@
 // All artwork is drawn in code (SVG strings), so nothing needs downloading.
 import { RAINBOW } from './cast.js';
 import { lakeSVG, duckSVG } from './lakeart.js';
+import { stableSVG } from './stableart.js';
 
 export const W = 1600;
 export const H = 900;
@@ -16,7 +17,7 @@ export const ROOMS = [];
 });
 
 // Where characters may walk.
-export const GROUND = { x0: 50, x1: 1330, y0: 815, y1: 880 };
+export const GROUND = { x0: 290, x1: 1330, y0: 815, y1: 880 };
 export function roomBounds(r) {
   return { x0: r.x + 45, x1: r.x + r.w - 45, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
 }
@@ -216,7 +217,7 @@ export function sceneSVG() {
   </defs>
   <g id="castleScene">
   <rect width="${W}" height="${H}" fill="url(#sky)"/>
-  <circle cx="1400" cy="130" r="64" fill="#fff3a0"/><circle cx="1400" cy="130" r="86" fill="#fff3a0" opacity=".35"/>
+  <g id="sunC"><circle cx="1400" cy="130" r="64" fill="#fff3a0"/><circle cx="1400" cy="130" r="86" fill="#fff3a0" opacity=".35"/></g>
   ${rainbowArcs}
   ${cloud(220, 150, 1.1, 0)}${cloud(1180, 90, .9, -6)}${cloud(620, 70, .8, -12)}${cloud(1480, 300, .7, -3)}
   <ellipse cx="200" cy="800" rx="420" ry="130" fill="#b8efc0"/>
@@ -249,7 +250,7 @@ export function sceneSVG() {
   ${[[90, 840, '#ff6b8b'], [260, 870, '#ffd23f'], [520, 850, '#a98bff'], [1080, 862, '#ff9a5c'], [1330, 845, '#5cc8ff'], [1520, 872, '#ff8fc7'], [30, 880, '#fff']].map(f => flower(...f)).join('')}
 
   <!-- stable (left) -->
-  <g transform="translate(20 640)">
+  <g id="stable" class="pond" transform="translate(20 640)">
     <rect x="10" y="60" width="230" height="136" rx="8" fill="#ffd9a8" stroke="#fff" stroke-width="4"/>
     <polygon points="-6,64 126,-10 258,64" fill="#ff9a5c" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
     <path d="M126,22 c-14,-16 -34,4 -14,22 l14,12 l14,-12 c20,-18 0,-38 -14,-22Z" fill="#fff"/>
@@ -267,8 +268,10 @@ export function sceneSVG() {
     <g transform="translate(1440 802) scale(.85)" class="duck-bob">${duckSVG()}</g>
     <ellipse cx="1470" cy="795" rx="140" ry="62" fill="transparent"/>
   </g>
+  <g id="cake" style="display:none"></g>
   </g>
   ${lakeSVG()}
+  ${stableSVG()}
 
   <g id="chars"></g>
   <g id="tools"></g>

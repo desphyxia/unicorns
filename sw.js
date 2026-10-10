@@ -1,7 +1,7 @@
 // Network-first so updates show up right away; falls back to cache when offline.
-const CACHE = 'elsas-castle-v4';
+const CACHE = 'elsas-castle-v5';
 const FILES = ['./', 'index.html', 'style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
-  'src/main.js', 'src/art.js', 'src/cast.js', 'src/audio.js', 'src/wardrobe.js', 'src/lakeart.js', 'src/trip.js'];
+  'src/main.js', 'src/art.js', 'src/cast.js', 'src/audio.js', 'src/wardrobe.js', 'src/lakeart.js', 'src/trip.js', 'src/sky.js', 'src/party.js', 'src/photos.js', 'src/stable.js', 'src/stableart.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));

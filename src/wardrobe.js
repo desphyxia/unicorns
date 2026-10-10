@@ -13,7 +13,7 @@ const CHECK = '<svg viewBox="0 0 100 100"><path d="M24,52 L43,71 L78,30" stroke=
 
 const thumb = (def, look, view) => `<svg viewBox="${view}">${princessSVG(def, look)}</svg>`;
 
-export function openWardrobe({ def, look: startLook, onChange, onClose }) {
+export function openWardrobe({ def, name, look: startLook, onChange, onClose }) {
   const root = document.getElementById('wardrobe');
   const look = { ...defaultLook(def), ...startLook };
   let cat = CATS[0];
@@ -41,6 +41,11 @@ export function openWardrobe({ def, look: startLook, onChange, onClose }) {
         <div class="w-colors">${cat.palette.map((c) => `<button class="w-dot ${look[cat.color] === c ? 'sel' : ''}" data-color="${c}" style="background:${c}"></button>`).join('')}</div>
       </div>
       <button class="w-done" aria-label="Done">${CHECK}</button>`;
+    const tag = document.createElement('div');
+    tag.className = 'w-name';
+    tag.textContent = name || def.name;
+    tag.style.color = look.dressColor === '#ffffff' ? '#a98bff' : look.dressColor;
+    root.querySelector('.w-stage').appendChild(tag);
     if (animate) sparkles(root.querySelector('.w-preview'));
   }
 
