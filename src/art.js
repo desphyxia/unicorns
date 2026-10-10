@@ -99,24 +99,50 @@ export function defaultLook(p) {
   return { dress: 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: 0, tiaraColor: p.tiara };
 }
 
+// Hair and face come in two flavours: the simple storybook princess and the 'wavy' style used for Elsa.
+function hairBack(p) {
+  if (p.hairStyle !== 'wavy') return `<rect x="-24" y="-92" width="48" height="44" rx="16" fill="${p.hair}"/>
+  <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${p.hair}"/>`;
+  return `<ellipse cx="0" cy="-92" rx="25" ry="26" fill="${p.hair}"/>
+  <path d="M-25,-92 L-28,-58 Q-31,-46 -23,-43 Q-16,-37 -9,-44 Q-2,-37 5,-44 Q12,-37 19,-43 Q29,-46 28,-58 L25,-92Z" fill="${p.hair}"/>
+  ${[[-27, -84], [-29, -72], [-27, -60], [-26, -49], [27, -84], [29, -72], [27, -60], [26, -49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${p.hair}"/>`).join('')}
+  <path d="M-19,-98 Q-24,-72 -20,-52 M17,-99 Q23,-72 20,-50 M-6,-102 Q-11,-82 -9,-60 M7,-101 Q12,-80 9,-58" stroke="${p.hair2 || p.hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".75"/>`;
+}
+function fringe(p) {
+  if (p.hairStyle !== 'wavy') return `<path d="M-17,-91 Q-9,-112 0,-103 Q9,-112 17,-91 Q9,-99 0,-95 Q-9,-99 -17,-91Z" fill="${p.hair}"/>`;
+  return `<path d="M-18,-86 Q-21,-112 2,-110 Q21,-110 19,-88 Q12,-102 0,-99 Q-10,-96 -18,-86Z" fill="${p.hair}"/>
+  <path d="M-12,-105 Q-2,-109 9,-103" stroke="${p.hair2 || p.hair}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>`;
+}
+function face(p) {
+  if (p.hairStyle !== 'wavy') return `<circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
+  <circle cx="6" cy="-88" r="2.3" fill="#3b2a4a"/>
+  <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
+  <circle cx="10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
+  <path d="M-4,-82 Q0,-78 4,-82" stroke="#c4476e" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  return `<path d="M-10.5,-95 q3.5,-2.6 7,-.4 M3.5,-95.4 q3.5,-2 7,.6" stroke="#8a5a34" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-6.5" cy="-88" rx="3.2" ry="3.7" fill="#3b2418"/><ellipse cx="6.5" cy="-88" rx="3.2" ry="3.7" fill="#3b2418"/>
+  <circle cx="-5.5" cy="-89.5" r="1.2" fill="#fff"/><circle cx="7.5" cy="-89.5" r="1.2" fill="#fff"/>
+  <path d="M-10,-90.5 l-2,-1.6 M10,-90.5 l2,-1.6" stroke="#3b2418" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="-11" cy="-83" r="3.8" fill="#ff8f9f" opacity=".5"/><circle cx="11" cy="-83" r="3.8" fill="#ff8f9f" opacity=".5"/>
+  <path d="M-1,-84 q1,1.5 2,0" stroke="#d99a7a" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <path d="M-5,-80.6 Q0,-76.4 5,-80.6 Q0,-79 -5,-80.6Z" fill="#ff8fa8"/>
+  <path d="M-5,-80.6 Q0,-76.4 5,-80.6" stroke="#d96a8a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-1.5" cy="-79.2" rx="1.8" ry=".7" fill="#fff" opacity=".7"/>`;
+}
+
 export function princessSVG(p, look) {
   const l = { ...defaultLook(p), ...(look || {}) };
   return `<g class="body">
   <rect x="-10" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   <rect x="4" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   ${shoesSVG(l.shoes, l.shoesColor)}
-  <rect x="-24" y="-92" width="48" height="44" rx="16" fill="${p.hair}"/>
-  <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${p.hair}"/>
+  ${hairBack(p)}
   ${dressSVG(l.dress, l.dressColor)}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <circle cx="0" cy="-90" r="17" fill="${p.skin}"/>
-  <path d="M-17,-91 Q-9,-112 0,-103 Q9,-112 17,-91 Q9,-99 0,-95 Q-9,-99 -17,-91Z" fill="${p.hair}"/>
-  <circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
-  <circle cx="6" cy="-88" r="2.3" fill="#3b2a4a"/>
-  <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
-  <circle cx="10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
-  <path d="M-4,-82 Q0,-78 4,-82" stroke="#c4476e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  ${fringe(p)}
+  ${face(p)}
   ${tiaraSVG(l.tiara, l.tiaraColor)}
 </g>`;
 }
