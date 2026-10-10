@@ -19,6 +19,7 @@ A cosy, rainbow-coloured web game for a 3-year-old: princesses, unicorns and a b
 - Party button (cake): cake with candles to blow out (tap the flames), balloons to pop, confetti and the birthday song. If it is a princess's birthday (set in the parent corner), the party starts by itself the first time the game is opened that day.
 - Tap the stable to visit the unicorns: drag apples, carrots or cupcakes to feed them, drag the brush over them to groom them.
 - Parent corner: rename the princesses (the name shows in the wardrobe and in the birthday banner), set birthdays, delete photos.
+- Two new rooms in the castle's top corners: the **hair salon** (left) and the **makeup room** (right). Tap one, or drag a princess onto it, to pick who sits in the chair. Hair: 6 hairstyles, 8 hair colours and 6 hair accessories. Makeup: 6 lipstick styles, 6 eye-shadow styles and 6 cheek styles, each in 8 colours. Hold the round arrow button to put that room's styling back to the start for the princess in the chair.
 - Gentle background music, installable offline (PWA), tablet-first touch controls.
 - Parent corner: hold the small circle in the top-right corner for 3 seconds (sound on/off, reset).
 

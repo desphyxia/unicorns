@@ -1,5 +1,5 @@
 import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
-import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, GROUND, roomBounds, STYLE_COUNT, TOTAL_STYLES } from './art.js';
+import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, SALONS, GROUND, roomBounds, STYLE_COUNT, TOTAL_STYLES } from './art.js';
 import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from './lakeart.js';
 import { openWardrobe } from './wardrobe.js';
 import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
@@ -68,7 +68,7 @@ function make(def, kind, index) {
   }
   const sleepG = el('g', { style: 'display:none' }, bodyWrap);
   sleepG.innerHTML = kind === 'princess'
-    ? (def.hairStyle === 'wavy'
+    ? (def.face === 'elsa'
       ? `<circle cx="-6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><circle cx="6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><path d="M-9.6,-88.4 q3.3,3.4 6.6,0 M3,-88.4 q3.3,3.4 6.6,0" stroke="#33201a" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
       : `<circle cx="-6" cy="-88" r="3.8" fill="${def.skin}"/><circle cx="6" cy="-88" r="3.8" fill="${def.skin}"/><path d="M-9.5,-88 q3.5,3.5 7,0 M2.5,-88 q3.5,3.5 7,0" stroke="#3b2a4a" stroke-width="1.7" fill="none" stroke-linecap="round"/>`)
     : `<circle cx="72" cy="-100" r="5.2" fill="${def.body}"/><path d="M66.5,-100 q5.5,4.5 11,0" stroke="#3b2a4a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
@@ -244,13 +244,13 @@ function toSvg(e) {
 }
 
 function roomAt(x, y) {
-  return ROOMS.find((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) || null;
+  return [...ROOMS, ...SALONS].find((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) || null;
 }
 
 function updateHighlights() {
   const on = new Set();
-  for (const d of drags.values()) if (d.c && d.c.kind === 'princess' && d.moved && d.room) on.add(d.room.i);
-  highlights.forEach((h) => h.classList.toggle('on', on.has(+h.dataset.room)));
+  for (const d of drags.values()) if (d.c && d.c.kind === 'princess' && d.moved && d.room) on.add(String(d.room.i));
+  highlights.forEach((h) => h.classList.toggle('on', on.has(h.dataset.room)));
 }
 
 function onDown(e, c) {
@@ -328,6 +328,13 @@ function endDrag(e) {
     if (u) { mount(c, u); updateHighlights(); return; }
   }
   const room = c.kind === 'princess' ? d.room : null;
+  if (room && room.salon) { // dropped on the hair salon or makeup room: she sits in the chair
+    const b0 = boundsOf(c);
+    c.x = clamp(c.x, b0.x0, b0.x1); c.tx = c.x; c.ty = rand(b0.y0, b0.y1); c.speed = 480; c.wait = rand(0.5, 1.5);
+    updateHighlights();
+    openSalon(room.i, c);
+    return;
+  }
   if (c.kind === 'princess') {
     c.home = room ? room.i : null;
     saved.homes[c.def.id] = c.home;
@@ -372,26 +379,52 @@ function tap(c) {
 }
 
 // tapping a princess or a unicorn in the castle opens its styling screen
+function charById(id) { return chars.find((k) => k.def.id === id); }
+function redraw(c, look) {
+  c.art.innerHTML = c.kind === 'unicorn' ? unicornSVG(c.def, look) : princessSVG(c.def, look);
+  c.body = c.art.parentNode;
+}
+// put saved styling back to the start for just some keys (or all keys when keys is null)
+function clearLook(store, id, keys) {
+  const l = store[id];
+  if (!l) return;
+  if (keys) keys.forEach((k) => delete l[k]);
+  if (!keys || !Object.keys(l).length) delete store[id];
+}
+
 function openStyling(c) {
-  const id = c.def.id;
   const isUnicorn = c.kind === 'unicorn';
   const store = isUnicorn ? saved.ulooks : saved.looks;
-  const draw = (look) => {
-    c.art.innerHTML = isUnicorn ? unicornSVG(c.def, look) : princessSVG(c.def, look);
-    c.body = c.art.parentNode;
-  };
   openWardrobe({
-    kind: c.kind,
-    def: c.def,
-    name: isUnicorn ? null : nameOf(c.def),
-    look: store[id],
+    section: isUnicorn ? 'unicorn' : 'clothes',
+    cast: [{ def: c.def, look: store[c.def.id], name: isUnicorn ? null : nameOf(c.def) }],
     unlocked: isUnicorn ? {} : unlockedMap(),
     fresh: isUnicorn ? [] : saved.newItems.splice(0),
-    onChange: (look) => { store[id] = look; save(); draw(look); },
-    onReset: () => { delete store[id]; save(); draw(undefined); },
+    onChange: (def, look) => { store[def.id] = { ...(store[def.id] || {}), ...look }; save(); redraw(c, store[def.id]); },
+    onReset: (def, keys) => { clearLook(store, def.id, keys); save(); redraw(c, store[def.id]); },
     onClose: () => { idle = 0; c.hopT = 0; sparkle(c.x, c.y - 70, 14); },
   });
 }
+
+// the hair salon and the makeup room: pick a princess, then style her hair or face
+function openSalon(section, who) {
+  const princesses = chars.filter((k) => k.kind === 'princess');
+  const start = Math.max(0, princesses.findIndex((k) => who ? k === who : k.def.id === 'elsa'));
+  openWardrobe({
+    section: section === 'hair' ? 'hair' : 'makeup',
+    cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
+    index: start,
+    onChange: (def, look) => { saved.looks[def.id] = { ...(saved.looks[def.id] || {}), ...look }; save(); redraw(charById(def.id), saved.looks[def.id]); },
+    onReset: (def, keys) => { clearLook(saved.looks, def.id, keys); save(); redraw(charById(def.id), saved.looks[def.id]); },
+    onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
+  });
+}
+svg.querySelectorAll('.salon').forEach((g) => g.addEventListener('pointerdown', (e) => {
+  if (busy || mode !== 'castle') return;
+  e.preventDefault();
+  audio.chime(8);
+  openSalon(g.dataset.salon, null);
+}));
 
 // ---------- riding ----------
 function mount(p, u) {

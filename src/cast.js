@@ -5,7 +5,7 @@ export const RAINBOW = ['#ff6b8b', '#ff9a5c', '#ffd23f', '#6edc8c', '#5cc8ff', '
 export const PRINCESSES = [
   // Elsa is drawn to look like the real Elsa: round face, wavy chestnut hair with lighter streaks, side-swept fringe,
   // a little tied-back tuft, big dark brown eyes and rosy cheeks. Her favourite coral T-shirt colour is her default dress.
-  { id: 'elsa', name: 'Elsa', dress: '#f27c80', hair: '#8c5b3a', hair2: '#c9915f', skin: '#f1c4a0', shoes: '#ff8fc7', tiara: '#ffd84d', hairStyle: 'wavy' },
+  { id: 'elsa', name: 'Elsa', dress: '#f27c80', hair: '#8c5b3a', skin: '#f1c4a0', shoes: '#ff8fc7', tiara: '#ffd84d', hairStyle: 1, face: 'elsa' },
   { id: 'p2', name: 'Violet', dress: '#a98bff', hair: '#5b3a29', skin: '#f1c27d', shoes: '#ff8fc7', tiara: '#ffe27a' },
   { id: 'p3', name: 'Marina', dress: '#5cc8ff', hair: '#2d2340', skin: '#8d5524', shoes: '#ffd23f', tiara: '#fff3b0' },
   { id: 'p4', name: 'Fern', dress: '#6edc8c', hair: '#e8743b', skin: '#ffe0bd', shoes: '#ff9a5c', tiara: '#ffd84d' },
@@ -28,3 +28,9 @@ export const TIARA_PALETTE = ['#ffd84d', '#ffffff', '#ff8fc7', '#5cc8ff', '#a98b
 
 // Coat colours to choose from for the unicorns.
 export const COAT_PALETTE = ['#ffffff', '#ffd2e8', '#bfe3ff', '#c4f5d0', '#fff0b8', '#dcc9ff', '#ffd4bd', '#d9d9ea'];
+
+// Hair salon and makeup room colour choices.
+export const HAIR_PALETTE = ['#8c5b3a', '#2d2340', '#f5c542', '#e8743b', '#ff6fa5', '#a98bff', '#5cc8ff', '#e8e4f0'];
+export const LIP_PALETTE = ['#ff6b8b', '#e0556f', '#ff8fc7', '#d94a8c', '#ff9a5c', '#a98bff', '#c9566f', '#ffb3c7'];
+export const EYE_PALETTE = ['#a98bff', '#5cc8ff', '#ff8fc7', '#6edc8c', '#ffd23f', '#ff9a5c', '#2d2340', '#ffffff'];
+export const CHEEK_PALETTE = ['#ff8f9f', '#ff6b8b', '#ffb3c7', '#ffd23f', '#5cc8ff', '#a98bff', '#6edc8c', '#ff9a5c'];

@@ -17,7 +17,7 @@ html, body {
 .char { cursor: grab; }
 .char:active { cursor: grabbing; }
 
-.room-hl { fill: rgba(255, 255, 255, .35); stroke: #fff; stroke-width: 10; opacity: 0; transition: opacity .15s; }
+.room-hl { pointer-events: none; fill: rgba(255, 255, 255, .35); stroke: #fff; stroke-width: 10; opacity: 0; transition: opacity .15s; }
 .room-hl.on { opacity: 1; }
 
 .cloud { animation: drift 40s linear infinite alternate; }
@@ -210,3 +210,19 @@ html, body {
 .w-reset.holding .rr { stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s linear; }
 .kind-unicorn .w-preview svg { height: auto; width: 46vw; max-height: 66vh; }
 @media (orientation: portrait) { .w-reset { width: 9vh; height: 9vh; } .kind-unicorn .w-preview svg { width: 70vw; max-height: 34vh; } }
+
+/* hair salon and makeup room */
+#wardrobe.sec-hair { background: linear-gradient(160deg, #ffd0e6, #ffe9f4 40%, #e6d8ff); }
+#wardrobe.sec-makeup { background: linear-gradient(160deg, #e3d4ff, #ffe0f0 45%, #fff0d8); }
+.w-stage { position: relative; }
+.w-back { position: absolute; left: 50%; top: 52%; height: 84vh; width: auto; transform: translate(-50%, -50%); z-index: 0; pointer-events: none; }
+.w-preview { z-index: 1; }
+.w-who { position: absolute; top: 1.6vh; left: 0; right: 0; display: flex; justify-content: center; gap: 1vh; z-index: 2; padding-left: 21vh; pointer-events: none; }
+.w-face { pointer-events: auto; width: 8.6vh; height: 8.6vh; padding: .3vh; border-radius: 50%; border: .7vh solid #fff; background: rgba(255, 255, 255, .8); box-shadow: 0 .6vh 1.2vh rgba(120, 60, 160, .2); overflow: hidden; }
+.w-face svg { width: 100%; height: 100%; display: block; }
+.w-face.sel { border-color: #ff6b8b; background: #fff; transform: scale(1.12); }
+.salon-glow { animation: salonglow 2.4s ease-in-out infinite; pointer-events: none; }
+@keyframes salonglow { 0%, 100% { opacity: .15; } 50% { opacity: .75; } }
+@media (orientation: portrait) { .w-who { padding-left: 0; top: 12vh; } .w-face { width: 8vh; height: 8vh; } }
+.w-name { z-index: 3; }
+.w-done, .w-reset { z-index: 5; }

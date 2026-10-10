@@ -122,28 +122,83 @@ export function tiaraSVG(style, c) {
 }
 
 export function defaultLook(p) {
-  return { dress: 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: 0, tiaraColor: p.tiara };
+  return {
+    dress: 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: 0, tiaraColor: p.tiara,
+    hairStyle: p.hairStyle || 0, hairColor: p.hair, hairAcc: 0, hairAccColor: '#ff8fc7',
+    lips: 0, lipsColor: '#ff6b8b', eyes: 0, eyesColor: '#a98bff', cheeks: 0, cheeksColor: '#ff8f9f',
+  };
 }
 
-// Hair and face come in two flavours: the simple storybook princess and the 'wavy' style used for Elsa.
-function hairBack(p) {
-  if (p.hairStyle !== 'wavy') return `<rect x="-24" y="-92" width="48" height="44" rx="16" fill="${p.hair}"/>
-  <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${p.hair}"/>`;
-  return `<path d="M-19,-104 Q-42,-100 -38,-76 Q-36,-62 -28,-60 Q-30,-80 -22,-90Z" fill="${p.hair}"/>
-  <ellipse cx="0" cy="-92" rx="27" ry="27" fill="${p.hair}"/>
-  <path d="M-27,-92 L-30,-58 Q-33,-46 -24,-43 Q-16,-36 -9,-44 Q-2,-36 5,-44 Q12,-36 19,-43 Q31,-46 30,-58 L27,-92Z" fill="${p.hair}"/>
-  ${[[-29, -84], [-31, -72], [-29, -60], [-27, -49], [29, -84], [31, -72], [29, -60], [27, -49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${p.hair}"/>`).join('')}
-  <path d="M-20,-98 Q-25,-72 -21,-52 M18,-99 Q24,-72 21,-50 M-6,-102 Q-11,-82 -9,-60 M8,-101 Q13,-80 10,-58 M-34,-92 Q-37,-78 -32,-66" stroke="${p.hair2 || p.hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".75"/>`;
+// ---- hair: 6 styles in any colour ----
+const blend = (a, b, k) => {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const m = (sh) => Math.round(((pa >> sh) & 255) * (1 - k) + ((pb >> sh) & 255) * k);
+  return `#${[16, 8, 0].map((sh) => m(sh).toString(16).padStart(2, '0')).join('')}`;
+};
+const highlight = (c) => blend(c, '#fff0d8', 0.4);
+
+function hairBack(style, c) {
+  const c2 = highlight(c);
+  switch (style % 6) {
+    case 1: // wavy curls with a little tied-back tuft (Elsa's own)
+      return `<path d="M-19,-104 Q-42,-100 -38,-76 Q-36,-62 -28,-60 Q-30,-80 -22,-90Z" fill="${c}"/>
+  <ellipse cx="0" cy="-92" rx="27" ry="27" fill="${c}"/>
+  <path d="M-27,-92 L-30,-58 Q-33,-46 -24,-43 Q-16,-36 -9,-44 Q-2,-36 5,-44 Q12,-36 19,-43 Q31,-46 30,-58 L27,-92Z" fill="${c}"/>
+  ${[[-29, -84], [-31, -72], [-29, -60], [-27, -49], [29, -84], [31, -72], [29, -60], [27, -49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${c}"/>`).join('')}
+  <path d="M-20,-98 Q-25,-72 -21,-52 M18,-99 Q24,-72 21,-50 M-6,-102 Q-11,-82 -9,-60 M8,-101 Q13,-80 10,-58 M-34,-92 Q-37,-78 -32,-66" stroke="${c2}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".75"/>`;
+    case 2: // short bob
+      return `<ellipse cx="0" cy="-92" rx="26" ry="26" fill="${c}"/>
+  <path d="M-26,-92 L-29,-70 Q-30,-60 -20,-60 L20,-60 Q30,-60 29,-70 L26,-92Z" fill="${c}"/>
+  <path d="M-21,-98 Q-25,-80 -23,-66 M21,-98 Q25,-80 23,-66" stroke="${c2}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>`;
+    case 3: // pigtails
+      return `<ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>
+  <path d="M-22,-98 Q-50,-92 -46,-62 Q-44,-42 -34,-44 Q-38,-64 -26,-84Z" fill="${c}"/>
+  <path d="M22,-98 Q50,-92 46,-62 Q44,-42 34,-44 Q38,-64 26,-84Z" fill="${c}"/>
+  <path d="M-42,-80 Q-44,-64 -39,-52 M42,-80 Q44,-64 39,-52" stroke="${c2}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <circle cx="-28" cy="-92" r="4" fill="#ff8fc7"/><circle cx="28" cy="-92" r="4" fill="#ff8fc7"/>`;
+    case 4: // high ponytail
+      return `<ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>
+  <path d="M4,-112 Q44,-136 56,-98 Q62,-62 42,-48 Q46,-76 32,-94 Q22,-106 4,-106Z" fill="${c}"/>
+  <path d="M30,-116 Q50,-108 52,-84" stroke="${c2}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <circle cx="7" cy="-111" r="4.2" fill="#ff8fc7"/>`;
+    case 5: // top bun and long hair
+      return `<circle cx="0" cy="-122" r="12.5" fill="${c}"/><circle cx="-4" cy="-125" r="4" fill="${c2}" opacity=".6"/><ellipse cx="0" cy="-112" rx="11" ry="3" fill="#ff8fc7"/>
+  <rect x="-24" y="-92" width="48" height="44" rx="16" fill="${c}"/><ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>`;
+    default: // long and straight
+      return `<rect x="-24" y="-92" width="48" height="44" rx="16" fill="${c}"/>
+  <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>`;
+  }
 }
-function fringe(p) {
-  if (p.hairStyle !== 'wavy') return `<path d="M-17,-91 Q-9,-112 0,-103 Q9,-112 17,-91 Q9,-99 0,-95 Q-9,-99 -17,-91Z" fill="${p.hair}"/>`;
-  return `<path d="M-21,-90 Q-21,-113 4,-111 Q23,-109 22,-92 Q13,-103 -1,-100 Q-9,-97 -14,-88 Q-18,-85 -21,-90Z" fill="${p.hair}"/>
-  <path d="M-14,-106 Q-3,-110 12,-103 M-17,-98 Q-12,-103 -6,-102" stroke="${p.hair2 || p.hair}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>
-  <path d="M-19.5,-97 Q-24,-82 -19.5,-69 Q-15.5,-78 -16.5,-93Z M19.5,-97 Q24,-82 19.5,-69 Q15.5,-78 16.5,-93Z" fill="${p.hair}"/>
+function fringe(style, c) {
+  const c2 = highlight(c);
+  switch (style % 6) {
+    case 1:
+      return `<path d="M-21,-90 Q-21,-113 4,-111 Q23,-109 22,-92 Q13,-103 -1,-100 Q-9,-97 -14,-88 Q-18,-85 -21,-90Z" fill="${c}"/>
+  <path d="M-14,-106 Q-3,-110 12,-103 M-17,-98 Q-12,-103 -6,-102" stroke="${c2}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>
+  <path d="M-19.5,-97 Q-24,-82 -19.5,-69 Q-15.5,-78 -16.5,-93Z M19.5,-97 Q24,-82 19.5,-69 Q15.5,-78 16.5,-93Z" fill="${c}"/>
   <circle cx="-21" cy="-100" r="3.2" fill="#fff" stroke="#e8dcd2" stroke-width="1"/>`;
+    case 2: case 3:
+      return `<path d="M-19,-90 Q-21,-112 0,-112 Q21,-112 19,-90 Q10,-98 0,-98 Q-10,-98 -19,-90Z" fill="${c}"/>`;
+    default:
+      return `<path d="M-17,-91 Q-9,-112 0,-103 Q9,-112 17,-91 Q9,-99 0,-95 Q-9,-99 -17,-91Z" fill="${c}"/>`;
+  }
 }
+function hairAccSVG(style, c) {
+  switch (style % 6) {
+    case 1: return `<g transform="translate(15 -108)"><path d="M0,0 L-13,-8 L-13,8Z M0,0 L13,-8 L13,8Z" fill="${c}"/><circle r="3.4" fill="#fff"/></g>`;
+    case 2: return `<g transform="translate(-14 -103)">${[0, 72, 144, 216, 288].map((a) => `<circle cx="${(Math.cos(a * Math.PI / 180) * 4.6).toFixed(1)}" cy="${(Math.sin(a * Math.PI / 180) * 4.6).toFixed(1)}" r="3.4" fill="${c}"/>`).join('')}<circle r="2.4" fill="#fff6a8"/></g>`;
+    case 3: return `<path d="M-19,-96 Q0,-116 19,-96" stroke="${c}" stroke-width="4.4" fill="none" stroke-linecap="round"/>`;
+    case 4: return [[-16, -102, -20], [15, -105, 20]].map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse cx="-4.5" cy="-2" rx="4.6" ry="3.4" fill="${c}"/><ellipse cx="4.5" cy="-2" rx="4.6" ry="3.4" fill="${c}"/><ellipse cx="-3" cy="2.4" rx="3" ry="2.2" fill="${c}" opacity=".8"/><ellipse cx="3" cy="2.4" rx="3" ry="2.2" fill="${c}" opacity=".8"/><rect x="-.9" y="-4.5" width="1.8" height="9" rx=".9" fill="#6b4a7a"/></g>`).join('');
+    case 5: return star(-15, -103, 5.5, c) + star(14, -105, 5.5, c);
+    default: return '';
+  }
+}
+
+// ---- face: eyes, mouth and cheeks, plus makeup ----
+const faceGeom = (p) => (p.face === 'elsa' ? { ex: 6.3, ey: -88.6, my: -79.6, cx: 11.5, cy: -82.5 } : { ex: 6, ey: -88, my: -80.5, cx: 10, cy: -83 });
+
 function face(p) {
-  if (p.hairStyle !== 'wavy') return `<circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
+  if (p.face !== 'elsa') return `<circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
   <circle cx="6" cy="-88" r="2.3" fill="#3b2a4a"/>
   <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
   <circle cx="10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
@@ -156,19 +211,56 @@ function face(p) {
   <path d="M-3.4,-79.6 Q0,-77 3.4,-79.6" stroke="#c9566f" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
 }
 
+function lipsSVG(style, c, g) {
+  const y = g.my;
+  switch (style % 6) {
+    case 1: return `<path d="M-4.8,${y} Q-2.4,${y - 2.8} 0,${y - 1.6} Q2.4,${y - 2.8} 4.8,${y} Q0,${y + 4.6} -4.8,${y}Z" fill="${c}"/>`;
+    case 2: return `<path d="M-4.8,${y} Q-2.4,${y - 2.8} 0,${y - 1.6} Q2.4,${y - 2.8} 4.8,${y} Q0,${y + 4.6} -4.8,${y}Z" fill="${c}"/><ellipse cx="-1.6" cy="${y + 1}" rx="2" ry=".8" fill="#fff" opacity=".85"/>`;
+    case 3: return `<path transform="translate(0 ${y + 0.6}) scale(.6)" d="M0,9 C-16,-2 -8,-14 0,-6 C8,-14 16,-2 0,9Z" fill="${c}"/>`;
+    case 4: return `<path d="M-6.8,${y - 1.4} Q0,${y + 6} 6.8,${y - 1.4}" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    case 5: return `<ellipse cx="0" cy="${y + 0.6}" rx="3.2" ry="2.5" fill="${c}"/><ellipse cx="-.9" cy="${y - 0.2}" rx="1" ry=".6" fill="#fff" opacity=".75"/>`;
+    default: return '';
+  }
+}
+function eyesSVG(style, c, g) {
+  const { ex, ey } = g;
+  switch (style % 6) {
+    case 1: return [-1, 1].map((sg) => `<ellipse cx="${sg * ex}" cy="${ey - 6.6}" rx="5.2" ry="2.5" fill="${c}" opacity=".65"/>`).join('');
+    case 2: return [-1, 1].map((sg) => `<ellipse cx="${sg * ex}" cy="${ey - 6.6}" rx="5.2" ry="2.5" fill="${c}" opacity=".65"/>${[[-2.6, -7.2], [0, -8.4], [2.6, -7]].map(([dx, dy]) => `<circle cx="${sg * ex + dx}" cy="${ey + dy}" r=".8" fill="#fff"/>`).join('')}`).join('');
+    case 3: return [-1, 1].map((sg) => `<path d="M${sg * (ex - 4.2)},${ey - 2.4} Q${sg * ex},${ey - 6.6} ${sg * (ex + 4)},${ey - 3.4} L${sg * (ex + 7.2)},${ey - 6.2}" stroke="${c}" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
+    case 4: return [-1, 1].map((sg) => ['#ff6b8b', '#ffd23f', '#5cc8ff'].map((col, i) => `<ellipse cx="${sg * ex}" cy="${ey - 5.6 - i * 1.7}" rx="${5.2 - i * 0.5}" ry="1.1" fill="${col}" opacity=".85"/>`).join('')).join('');
+    case 5: return [-1, 1].map((sg) => star(sg * (ex + 7), ey + 0.5, 3.4, c)).join('');
+    default: return '';
+  }
+}
+function cheeksSVG(style, c, g) {
+  const { cx, cy } = g;
+  switch (style % 6) {
+    case 1: return [-1, 1].map((sg) => `<circle cx="${sg * cx}" cy="${cy}" r="5.4" fill="${c}" opacity=".55"/>`).join('');
+    case 2: return [[-8, -83.8], [-4.8, -82.6], [-11.4, -80.8], [8, -83.8], [4.8, -82.6], [11.4, -80.8], [-7, -80.6], [7, -80.6]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="${c}" opacity=".9"/>`).join('');
+    case 3: return [-1, 1].map((sg) => star(sg * (cx + 2), cy - 3, 3.4, c) + `<circle cx="${sg * (cx + 2) - 0.6}" cy="${cy - 3.6}" r=".7" fill="#fff"/>`).join('');
+    case 4: return `<path transform="translate(${cx} ${cy}) scale(.55)" d="M0,9 C-16,-2 -8,-14 0,-6 C8,-14 16,-2 0,9Z" fill="${c}"/>`;
+    case 5: return ['#ff6b8b', '#ffd23f', '#5cc8ff'].map((col, i) => `<path d="M${cx - 5 + i * 1.4},${cy + 3} A${5 - i * 1.4},${5 - i * 1.4} 0 0 1 ${cx + 5 - i * 1.4},${cy + 3}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`).join('');
+    default: return '';
+  }
+}
+
 export function princessSVG(p, look) {
   const l = { ...defaultLook(p), ...(look || {}) };
+  const g = faceGeom(p);
   return `<g class="body">
   <rect x="-10" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   <rect x="4" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   ${shoesSVG(l.shoes, l.shoesColor)}
-  ${hairBack(p)}
+  ${hairBack(l.hairStyle, l.hairColor)}
   ${dressSVG(l.dress, l.dressColor)}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
-  ${p.hairStyle === 'wavy' ? `<path d="M0,-107 C11,-107 18.5,-99 18.5,-89 C18.5,-79 12,-72 0,-71.5 C-12,-72 -18.5,-79 -18.5,-89 C-18.5,-99 -11,-107 0,-107Z" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
-  ${fringe(p)}
+  ${p.face === 'elsa' ? `<path d="M0,-107 C11,-107 18.5,-99 18.5,-89 C18.5,-79 12,-72 0,-71.5 C-12,-72 -18.5,-79 -18.5,-89 C-18.5,-99 -11,-107 0,-107Z" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
+  ${fringe(l.hairStyle, l.hairColor)}
   ${face(p)}
+  ${cheeksSVG(l.cheeks, l.cheeksColor, g)}${eyesSVG(l.eyes, l.eyesColor, g)}${lipsSVG(l.lips, l.lipsColor, g)}
+  ${hairAccSVG(l.hairAcc, l.hairAccColor)}
   ${tiaraSVG(l.tiara, l.tiaraColor)}
 </g>`;
 }
@@ -290,14 +382,45 @@ function room(r) {
   </g>`;
 }
 
+// The two special rooms in the top corners of the castle: hairdressing (left) and makeup (right).
+export const SALONS = [
+  { i: 'hair', salon: true, x: 380, y: 220, w: 210, h: 180 },
+  { i: 'makeup', salon: true, x: 1010, y: 220, w: 210, h: 180 },
+];
+
+function salonRoom(r) {
+  const fy = r.y + r.h - 22;
+  const cx = r.x + r.w / 2;
+  const hair = r.i === 'hair';
+  const props = hair
+    ? `<ellipse cx="${cx}" cy="${r.y + 74}" rx="52" ry="60" fill="#fff" stroke="#ffb3d9" stroke-width="5"/><ellipse cx="${cx}" cy="${r.y + 74}" rx="44" ry="52" fill="#eaf6ff"/><path d="M${cx - 28},${r.y + 52} Q${cx - 16},${r.y + 36} ${cx},${r.y + 34}" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".9"/>
+       <g transform="translate(${r.x + 36} ${r.y + 40})"><circle cx="-9" cy="14" r="8" fill="none" stroke="#ff6b8b" stroke-width="4"/><circle cx="9" cy="14" r="8" fill="none" stroke="#ff6b8b" stroke-width="4"/><path d="M-6,8 L12,-16 M6,8 L-12,-16" stroke="#c9b0ff" stroke-width="5" stroke-linecap="round"/></g>
+       <rect x="${cx - 34}" y="${fy - 40}" width="68" height="18" rx="9" fill="#ff8fc7"/><rect x="${cx - 30}" y="${fy - 96}" width="60" height="58" rx="18" fill="#ff8fc7"/><rect x="${cx - 24}" y="${fy - 90}" width="48" height="46" rx="14" fill="#ffb3d9"/><rect x="${cx - 5}" y="${fy - 24}" width="10" height="24" fill="#c9a0ff"/><ellipse cx="${cx}" cy="${fy}" rx="26" ry="6" fill="#c9a0ff"/>
+       <g transform="translate(${r.x + 168} ${fy - 14})"><rect x="-6" y="-34" width="12" height="34" rx="4" fill="#5cc8ff"/><rect x="10" y="-26" width="12" height="26" rx="4" fill="#6edc8c"/><rect x="-22" y="-22" width="12" height="22" rx="4" fill="#ffd23f"/></g>`
+    : `<circle cx="${cx}" cy="${r.y + 70}" r="46" fill="#fff" stroke="#ffd1e8" stroke-width="4"/><circle cx="${cx}" cy="${r.y + 70}" r="38" fill="#eaf6ff"/><path d="M${cx - 22},${r.y + 56} Q${cx - 12},${r.y + 44} ${cx + 2},${r.y + 42}" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".9"/>
+       ${Array.from({ length: 12 }, (_, k) => `<circle cx="${(cx + Math.cos(k / 12 * Math.PI * 2) * 52).toFixed(1)}" cy="${(r.y + 70 + Math.sin(k / 12 * Math.PI * 2) * 52).toFixed(1)}" r="4.2" fill="#fff3a0" stroke="#ffd96a" stroke-width="1.2"/>`).join('')}
+       <rect x="${r.x + 16}" y="${fy - 40}" width="178" height="12" rx="6" fill="#fff"/><rect x="${r.x + 28}" y="${fy - 28}" width="8" height="28" fill="#fff"/><rect x="${r.x + 174}" y="${fy - 28}" width="8" height="28" fill="#fff"/>
+       <g transform="translate(${r.x + 44} ${fy - 40})"><rect x="-4" y="-26" width="8" height="26" rx="2" fill="#ff6b8b"/><path d="M-4,-26 L4,-26 L2,-36 L-2,-36Z" fill="#ffb3c7"/></g>
+       <g transform="translate(${r.x + 66} ${fy - 40})"><rect x="-4" y="-22" width="8" height="22" rx="2" fill="#a98bff"/><path d="M-4,-22 L4,-22 L2,-31 L-2,-31Z" fill="#dcc9ff"/></g>
+       <g transform="translate(${r.x + 148} ${fy - 40})"><rect x="-9" y="-16" width="18" height="16" rx="4" fill="#fff6a8" stroke="#ffd96a" stroke-width="2"/><path d="M-5,-16 V-34 M0,-16 V-38 M5,-16 V-33" stroke="#ff9a5c" stroke-width="3.4" stroke-linecap="round"/></g>
+       <ellipse cx="${r.x + 110}" cy="${fy - 40}" rx="17" ry="7" fill="#ffd1e8" stroke="#fff" stroke-width="2"/><circle cx="${r.x + 110}" cy="${fy - 43}" r="6" fill="#ff8fc7"/>`;
+  return `<g class="salon" data-salon="${r.i}" style="cursor:pointer">
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${hair ? '#ffd0e6' : '#e0d2ff'}"/>
+    <rect x="${r.x}" y="${fy}" width="${r.w}" height="22" fill="#ffffff" opacity=".45"/>
+    ${props}
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#fff" stroke-width="6"/>
+    <rect class="salon-glow" x="${r.x + 4}" y="${r.y + 4}" width="${r.w - 8}" height="${r.h - 8}" rx="6" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="14 10"/>
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="transparent"/>
+  </g>`;
+}
+
 export function sceneSVG() {
   const rainbowArcs = RAINBOW.map((c, i) => {
     const rad = 760 - i * 26;
     return `<path d="M${800 - rad},800 A${rad},${rad} 0 0 1 ${800 + rad},800" stroke="${c}" stroke-width="28" fill="none" opacity=".75"/>`;
   }).join('');
   const merlon = (x, y) => `<rect x="${x}" y="${y}" width="24" height="18" rx="4" fill="#efe0ff"/>`;
-  const battlements = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => merlon(584 + i * 40, 186)).join('')
-    + [0, 1, 2, 3, 4].map((i) => merlon(384 + i * 40, 386) + merlon(1024 + i * 40, 386)).join('');
+  const battlements = Array.from({ length: 21 }, (_, i) => merlon(384 + i * 40, 186)).join('');
   const towerWin = (x, y) => `<path d="M${x},${y + 36} v-22 a12,12 0 0 1 24,0 v22 Z" fill="#a9d8ff" stroke="#fff" stroke-width="3"/>`;
 
   return `
@@ -326,7 +449,7 @@ export function sceneSVG() {
   <ellipse cx="1400" cy="810" rx="440" ry="140" fill="#aee9b8"/>
 
   <!-- castle -->
-  <path d="M580,200 H1020 V400 H1220 V780 H380 V400 H580 Z" fill="#f0e2ff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M380,200 H1220 V780 H380 Z" fill="#f0e2ff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
   ${battlements}
   <g>
     <rect x="290" y="170" width="90" height="610" rx="8" fill="#f6e8ff" stroke="#fff" stroke-width="5"/>
@@ -342,8 +465,8 @@ export function sceneSVG() {
   <line x1="800" y1="40" x2="800" y2="-10" stroke="#fff" stroke-width="5"/><polygon points="800,-10 850,6 800,22" fill="#ffd23f"/>
   <circle cx="800" cy="120" r="22" fill="#fff" opacity=".85"/><path d="M800,106 l4,9 10,1 -8,7 3,10 -9,-6 -9,6 3,-10 -8,-7 10,-1Z" fill="#ffd84d"/>
 
-  <g id="rooms">${ROOMS.map(room).join('')}</g>
-  <g id="hl">${ROOMS.map(r => `<rect class="room-hl" data-room="${r.i}" x="${r.x + 4}" y="${r.y + 4}" width="${r.w - 8}" height="${r.h - 8}" rx="6"/>`).join('')}</g>
+  <g id="rooms">${ROOMS.map(room).join('')}${SALONS.map(salonRoom).join('')}</g>
+  <g id="hl">${[...ROOMS, ...SALONS].map(r => `<rect class="room-hl" data-room="${r.i}" x="${r.x + 4}" y="${r.y + 4}" width="${r.w - 8}" height="${r.h - 8}" rx="6"/>`).join('')}</g>
 
   <!-- grounds -->
   <rect x="0" y="780" width="${W}" height="${H - 780}" fill="url(#grass)"/>
