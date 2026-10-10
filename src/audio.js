@@ -123,25 +123,32 @@ export function moveIn() {
 }
 
 // ---- lake sounds ----
+// A soft splash: a gentle, low whoosh that fades in, plus two quiet bubble notes.
 export function splash() {
   if (!ctx || !enabled) return;
   const t = ctx.currentTime;
-  const len = Math.floor(ctx.sampleRate * 0.4);
+  const len = Math.floor(ctx.sampleRate * 0.6);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
   const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  for (let i = 0; i < len; i++) {
+    const attack = Math.sin((Math.PI / 2) * Math.min(1, i / (len * 0.18))); // no sharp click at the start
+    d[i] = (Math.random() * 2 - 1) * attack * Math.pow(1 - i / len, 2.2);
+  }
   const src = ctx.createBufferSource();
   src.buffer = buf;
   const f = ctx.createBiquadFilter();
-  f.type = 'bandpass';
-  f.frequency.setValueAtTime(1800, t);
-  f.frequency.exponentialRampToValueAtTime(500, t + 0.35);
+  f.type = 'lowpass';
+  f.Q.value = 0.3;
+  f.frequency.setValueAtTime(1000, t);
+  f.frequency.exponentialRampToValueAtTime(240, t + 0.55);
   const g = ctx.createGain();
-  g.gain.value = 0.35;
+  g.gain.value = 0.16;
   src.connect(f);
   f.connect(g);
   g.connect(master);
   src.start(t);
+  tone(360 + Math.random() * 80, t + 0.03, 0.25, 0.04);
+  tone(520 + Math.random() * 80, t + 0.12, 0.22, 0.03);
 }
 
 export function bubble() {
