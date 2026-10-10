@@ -18,7 +18,7 @@ A cosy, rainbow-coloured web game for a 3-year-old: princesses, unicorns and a b
 - Camera button: keeps a picture of whatever is on screen; the photo book button opens the album (up to 12 photos, kept on the device).
 - Party button (cake): cake with candles to blow out (tap the flames), balloons to pop, confetti and the birthday song. If it is a princess's birthday (set in the parent corner), the party starts by itself the first time the game is opened that day.
 - Tap the stable to visit the unicorns: drag apples, carrots or cupcakes to feed them, drag the brush over them to groom them.
-- Parent corner: **Reset all settings (keeps coins)** puts rooms, outfits, names, birthdays, unlocked clothes and sound back to the start but keeps the gold coins and photos. Also: rename the princesses (the name shows in the wardrobe and in the birthday banner), set birthdays, delete photos.
+- Parent corner: **Reset clothing and styling** puts every princess back in her starting outfit; unlocked clothes, coins, rooms, names, birthdays and photos are all kept. Also: rename the princesses (the name shows in the wardrobe and in the birthday banner), set birthdays, delete photos.
 - Gentle background music, installable offline (PWA), tablet-first touch controls.
 - Parent corner: hold the small circle in the top-right corner for 3 seconds (sound on/off, reset).
 

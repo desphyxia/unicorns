@@ -963,28 +963,21 @@ document.getElementById('reset').addEventListener('click', () => {
   panel.hidden = true;
 });
 
-// Reset all settings: rooms, outfits, names, birthdays, unlocked clothes and sound go back to the start. Coins (and photos) are kept.
+// Reset clothing and styling: every princess goes back to her starting outfit and colours.
+// Unlocked clothes, coins, rooms, names, birthdays, photos and sound are all kept.
 document.getElementById('resetAll').addEventListener('click', () => {
   if (mode !== 'castle') { alert('Go back to the castle first, then try again.'); return; }
-  if (!confirm('Reset all settings back to the start? Rooms, outfits, names, birthdays and unlocked clothes are cleared. Your gold coins are kept.')) return;
-  party.stop(true);
-  chars.forEach((u) => { if (u.rider) dismount(u); });
-  saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, coins: saved.coins, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
+  if (!confirm('Put every princess back in her starting outfit? Your unlocked clothes, coins, rooms and names are kept.')) return;
+  saved.looks = {};
   save();
   chars.forEach((c) => {
-    c.dirt = false; c.water = false; c.foam = 0; c.sleeping = false; c.lie = 0;
-    c.x = c.tx = rand(GROUND.x0, GROUND.x1);
-    c.y = c.ty = rand(GROUND.y0, GROUND.y1);
-    if (c.kind === 'princess') {
-      c.home = null;
-      c.art.innerHTML = princessSVG(c.def, undefined); // back to the starting outfit
-      c.body = c.art.parentNode;
-    }
+    if (c.kind !== 'princess') return;
+    c.art.innerHTML = princessSVG(c.def, undefined); // back to the starting outfit
+    c.body = c.art.parentNode;
   });
-  audio.setEnabled(true);
-  snd.checked = true;
-  buildNames();
-  showCoins(false);
+  chars.forEach((u) => { // princesses riding a unicorn change too
+    if (u.rider) u.riderG.innerHTML = riderSVG(u.rider.def, undefined, 'riderclip', 0.95);
+  });
   panel.hidden = true;
 });
 
