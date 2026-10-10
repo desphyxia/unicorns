@@ -25,3 +25,6 @@ export const UNICORNS = [
 // Colour choices in the wardrobe: the rainbow plus pink and white (gold first for tiaras).
 export const PALETTE = [...RAINBOW, '#ff8fc7', '#ffffff'];
 export const TIARA_PALETTE = ['#ffd84d', '#ffffff', '#ff8fc7', '#5cc8ff', '#a98bff', '#6edc8c', '#ff9a5c', '#ff6b8b'];
+
+// Coat colours to choose from for the unicorns.
+export const COAT_PALETTE = ['#ffffff', '#ffd2e8', '#bfe3ff', '#c4f5d0', '#fff0b8', '#dcc9ff', '#ffd4bd', '#d9d9ea'];

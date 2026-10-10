@@ -75,8 +75,8 @@ export const wingsSVG = () => `<g class="uwings" transform="translate(-8 -78)">
 
 // a unicorn (facing right) with its princess on its back
 export const heroSVG = (pair, { rider = true, wings = false } = {}) =>
-  (wings ? wingsSVG() : '') + unicornSVG(pair.unicorn) + (rider ? riderSVG(pair.princess, pair.look, 'riderclipT') : '');
-export const unicornOnlySVG = (pair) => unicornSVG(pair.unicorn);
+  (wings ? wingsSVG() : '') + unicornSVG(pair.unicorn, pair.ulook) + (rider ? riderSVG(pair.princess, pair.look, 'riderclipT') : '');
+export const unicornOnlySVG = (pair) => unicornSVG(pair.unicorn, pair.ulook);
 export const princessOnlySVG = (pair) => princessSVG(pair.princess, pair.look);
 
 // ---------- little forest animals (facing right, feet at y=0) ----------

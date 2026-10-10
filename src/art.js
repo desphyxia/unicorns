@@ -179,31 +179,81 @@ export function riderSVG(p, look, clipId = 'riderclip', scale = 0.66) {
 }
 
 // Unicorns face right; the caller flips them.
-export function unicornSVG(u) {
-  const tail = RAINBOW.map((c, i) => `<path d="M-40,-62 Q${-80 - i * 2},${-66 + i * 4} ${-72 + i * 3},${-18 + i * 3}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".95"/>`).join('');
-  const mane = RAINBOW.map((c, i) => `<circle cx="${52 - i * 4}" cy="${-108 + i * 11}" r="${9 - (i % 2)}" fill="${c}"/>`).join('');
+// ---- unicorn styling: coat pattern + colour, mane/tail colours, and an extra ----
+export const MANE_SETS = [
+  RAINBOW,
+  ['#ffb3d9', '#ff8fc7', '#c9b0ff', '#9fd8ff', '#c9b0ff', '#ff8fc7'],   // cotton candy
+  ['#5cc8ff', '#4fd8c8', '#6edc8c', '#9fe8ff', '#5cc8ff', '#8fa8ff'],   // ocean
+  ['#ffd23f', '#ffe27a', '#ffb02e', '#fff3a0', '#ffd23f', '#ffcc66'],   // golden
+  ['#ff6b8b', '#ff9a5c', '#ffd23f', '#ff6b8b', '#ff9a5c', '#ffd23f'],   // fire
+  ['#a98bff', '#7a6bd8', '#5c4ad0', '#c9b0ff', '#a98bff', '#8fa8ff'],   // night
+];
+
+export function defaultUnicornLook(u) {
+  return { coat: 0, coatColor: u.body, mane: 0, extra: 0, extraColor: '#ff8fc7' };
+}
+
+function coatPattern(style) {
+  switch (style % STYLE_COUNT) {
+    case 1: return [[-26, -60, 6], [0, -46, 5], [24, -62, 6.5], [-8, -70, 4.5], [18, -44, 5], [-34, -46, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#ffb3d9" opacity=".75"/>`).join('');
+    case 2: return [[-28, -58], [-4, -66], [20, -52], [-16, -44], [32, -66], [4, -50]].map(([x, y], i) => star(x, y, 5.5 - (i % 2), '#ffd23f')).join('');
+    case 3: return RAINBOW.slice(0, 5).map((c, i) => `<path d="M${-34 + i * 15},-72 L${-24 + i * 15},-38" stroke="${c}" stroke-width="5" stroke-linecap="round" opacity=".6"/>`).join('');
+    case 4: return [[-26, -58], [2, -64], [24, -50], [-8, -46]].map(([x, y]) => `<path transform="translate(${x} ${y}) scale(.8)" d="M0,9 C-16,-2 -8,-14 0,-6 C8,-14 16,-2 0,9Z" fill="#ff6b8b" opacity=".8"/>`).join('');
+    case 5: return [[-30, -52, '#a98bff'], [-14, -68, '#ffd23f'], [4, -52, '#5cc8ff'], [18, -66, '#ff8fc7'], [32, -50, '#ffd23f'], [-4, -42, '#6edc8c']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3.2" fill="${c}"/>`).join('');
+    default: return '';
+  }
+}
+
+function unicornExtra(style, c) {
+  switch (style % STYLE_COUNT) {
+    case 1: // saddle blanket
+      return { over: `<path d="M-32,-78 Q-4,-90 24,-78 L26,-48 Q-4,-40 -34,-48Z" fill="${c}"/><path d="M-32,-52 q6,8 12,0 t12,0 t12,0 t12,0 t12,0" stroke="#fff" stroke-width="3.5" fill="none" opacity=".8"/>${star(-4, -66, 6, '#fff')}` };
+    case 2: // flower garland
+      return { top: [[30, -58], [38, -70], [46, -82], [54, -94], [60, -104]].map(([x, y]) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map((a) => `<circle cx="${(Math.cos(a * Math.PI / 180) * 5).toFixed(1)}" cy="${(Math.sin(a * Math.PI / 180) * 5).toFixed(1)}" r="3.6" fill="${c}"/>`).join('')}<circle r="2.6" fill="#fff6a8"/></g>`).join('') };
+    case 3: // big bow on the tail
+      return { top: `<g transform="translate(-44 -64)"><path d="M0,0 L-16,-9 L-16,9Z M0,0 L16,-9 L16,9Z" fill="${c}"/><circle r="4.5" fill="#fff"/></g>` };
+    case 4: // jewelled horn ring
+      return { top: `<g transform="rotate(-12 73 -112)"><ellipse cx="73" cy="-112" rx="10" ry="3.4" fill="#ffd84d" stroke="#e8b923" stroke-width="1.2"/><circle cx="73" cy="-113" r="3.4" fill="${c}" stroke="#fff" stroke-width="1"/></g>` };
+    case 5: // sparkly anklets
+      return { legs: [-36, -20, 14, 30].map((x) => `<rect x="${x - 1}" y="-18" width="13" height="5" rx="2.5" fill="${c}"/>`).join('') };
+    default: return {};
+  }
+}
+
+export function unicornSVG(u, look) {
+  const l = { ...defaultUnicornLook(u), ...(look || {}) };
+  const bc = l.coatColor;
+  const hoof = bc === u.body ? u.hoof : '#ffc9e6';
+  const cols = MANE_SETS[l.mane % MANE_SETS.length];
+  const ex = unicornExtra(l.extra, l.extraColor);
+  const tail = cols.map((c, i) => `<path d="M-40,-62 Q${-80 - i * 2},${-66 + i * 4} ${-72 + i * 3},${-18 + i * 3}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".95"/>`).join('');
+  const mane = cols.map((c, i) => `<circle cx="${52 - i * 4}" cy="${-108 + i * 11}" r="${9 - (i % 2)}" fill="${c}"/>`).join('');
   return `<g class="body">
   ${tail}
-  <rect x="-36" y="-40" width="11" height="38" rx="5" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
-  <rect x="-20" y="-38" width="11" height="36" rx="5" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
-  <rect x="14" y="-38" width="11" height="36" rx="5" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
-  <rect x="30" y="-40" width="11" height="38" rx="5" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
-  <rect x="-36" y="-8" width="11" height="7" rx="3" fill="${u.hoof}"/>
-  <rect x="-20" y="-8" width="11" height="7" rx="3" fill="${u.hoof}"/>
-  <rect x="14" y="-8" width="11" height="7" rx="3" fill="${u.hoof}"/>
-  <rect x="30" y="-8" width="11" height="7" rx="3" fill="${u.hoof}"/>
-  <ellipse cx="0" cy="-54" rx="48" ry="25" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
-  <path d="M28,-68 L48,-106 L70,-92 L50,-48 Z" fill="${u.body}"/>
+  <rect x="-36" y="-40" width="11" height="38" rx="5" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
+  <rect x="-20" y="-38" width="11" height="36" rx="5" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
+  <rect x="14" y="-38" width="11" height="36" rx="5" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
+  <rect x="30" y="-40" width="11" height="38" rx="5" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
+  <rect x="-36" y="-8" width="11" height="7" rx="3" fill="${hoof}"/>
+  <rect x="-20" y="-8" width="11" height="7" rx="3" fill="${hoof}"/>
+  <rect x="14" y="-8" width="11" height="7" rx="3" fill="${hoof}"/>
+  <rect x="30" y="-8" width="11" height="7" rx="3" fill="${hoof}"/>
+  ${ex.legs || ''}
+  <ellipse cx="0" cy="-54" rx="48" ry="25" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
+  ${coatPattern(l.coat)}
+  ${ex.over || ''}
+  <path d="M28,-68 L48,-106 L70,-92 L50,-48 Z" fill="${bc}"/>
   ${mane}
-  <ellipse cx="68" cy="-98" rx="23" ry="17" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5" transform="rotate(-12 68 -98)"/>
+  <ellipse cx="68" cy="-98" rx="23" ry="17" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5" transform="rotate(-12 68 -98)"/>
   <ellipse cx="84" cy="-92" rx="10" ry="8" fill="#ffe9f3"/>
-  <path d="M56,-110 L58,-128 L68,-113 Z" fill="${u.body}" stroke="#e7d6f5" stroke-width="1.5"/>
+  <path d="M56,-110 L58,-128 L68,-113 Z" fill="${bc}" stroke="#e7d6f5" stroke-width="1.5"/>
   <path d="M69,-112 L80,-152 L82,-108 Z" fill="#ffd84d" stroke="#e8b923" stroke-width="1.2"/>
   <path d="M72,-124 L80,-121 M71,-134 L80,-131 M74,-114 L81,-112" stroke="#fff3b0" stroke-width="2"/>
   <circle cx="72" cy="-100" r="3.2" fill="#3b2a4a"/>
   <circle cx="73" cy="-101" r="1.1" fill="#fff"/>
   <circle cx="86" cy="-92" r="1.6" fill="#d98aa8"/>
   <circle cx="62" cy="-90" r="4" fill="#ff8fa8" opacity=".4"/>
+  ${ex.top || ''}
 </g>`;
 }
 

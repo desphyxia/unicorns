@@ -29,7 +29,7 @@ const picker = document.getElementById('picker');
 
 // ---------- saved state ----------
 const KEY = 'elsas-castle-v1';
-let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
+let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, ulooks: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* ignore */ } }
 
@@ -57,7 +57,7 @@ function make(def, kind, index) {
   const flip = el('g', {}, g);
   const bodyWrap = el('g', {}, flip);
   const art = el('g', {}, bodyWrap);
-  art.innerHTML = kind === 'princess' ? princessSVG(def, saved.looks[def.id]) : unicornSVG(def);
+  art.innerHTML = kind === 'princess' ? princessSVG(def, saved.looks[def.id]) : unicornSVG(def, saved.ulooks[def.id]);
   const riderG = el('g', { style: 'display:none' }, bodyWrap);
 
   // mud spots and soap foam sit on top of the artwork
@@ -363,24 +363,32 @@ function tap(c) {
   if (mode === 'stable') { hearts(c.x + 30, c.y - 120, 4); audio.neigh(); return; }
   if (c.kind === 'unicorn') {
     audio.neigh();
-    if (c.rider && mode === 'castle') openPicker();
+    if (mode === 'castle') openStyling(c);
     return;
   }
   audio.chime(3 + (c.index * 2) % 7);
   if (mode === 'lake') return;
-  // tapping a princess in the castle opens her wardrobe
+  openStyling(c);
+}
+
+// tapping a princess or a unicorn in the castle opens its styling screen
+function openStyling(c) {
+  const id = c.def.id;
+  const isUnicorn = c.kind === 'unicorn';
+  const store = isUnicorn ? saved.ulooks : saved.looks;
+  const draw = (look) => {
+    c.art.innerHTML = isUnicorn ? unicornSVG(c.def, look) : princessSVG(c.def, look);
+    c.body = c.art.parentNode;
+  };
   openWardrobe({
+    kind: c.kind,
     def: c.def,
-    name: nameOf(c.def),
-    look: saved.looks[c.def.id],
-    unlocked: unlockedMap(),
-    fresh: saved.newItems.splice(0),
-    onChange: (look) => {
-      saved.looks[c.def.id] = look;
-      save();
-      c.art.innerHTML = princessSVG(c.def, look);
-      c.body = c.art.parentNode;
-    },
+    name: isUnicorn ? null : nameOf(c.def),
+    look: store[id],
+    unlocked: isUnicorn ? {} : unlockedMap(),
+    fresh: isUnicorn ? [] : saved.newItems.splice(0),
+    onChange: (look) => { store[id] = look; save(); draw(look); },
+    onReset: () => { delete store[id]; save(); draw(undefined); },
     onClose: () => { idle = 0; c.hopT = 0; sparkle(c.x, c.y - 70, 14); },
   });
 }
@@ -479,7 +487,7 @@ function beginTrip(dest) {
   lakeHome.hidden = false;
   startTrip({
     dest,
-    pairs: tripPairs.map(({ u, p }) => ({ unicorn: u.def, princess: p.def, look: saved.looks[p.def.id] })),
+    pairs: tripPairs.map(({ u, p }) => ({ unicorn: u.def, ulook: saved.ulooks[u.def.id], princess: p.def, look: saved.looks[p.def.id] })),
     locked: lockedItems(),
     onPhoto: (source) => photosApi.savePhoto(source),
     onDone: () => { if (mode === 'trip' && !busy) { audio.moveIn(); goTo(endTripScene); } },
@@ -959,24 +967,6 @@ document.getElementById('reset').addEventListener('click', () => {
       c.x = c.tx = rand(GROUND.x0, GROUND.x1);
       c.y = c.ty = rand(GROUND.y0, GROUND.y1);
     }
-  });
-  panel.hidden = true;
-});
-
-// Reset clothing and styling: every princess goes back to her starting outfit and colours.
-// Unlocked clothes, coins, rooms, names, birthdays, photos and sound are all kept.
-document.getElementById('resetAll').addEventListener('click', () => {
-  if (mode !== 'castle') { alert('Go back to the castle first, then try again.'); return; }
-  if (!confirm('Put every princess back in her starting outfit? Your unlocked clothes, coins, rooms and names are kept.')) return;
-  saved.looks = {};
-  save();
-  chars.forEach((c) => {
-    if (c.kind !== 'princess') return;
-    c.art.innerHTML = princessSVG(c.def, undefined); // back to the starting outfit
-    c.body = c.art.parentNode;
-  });
-  chars.forEach((u) => { // princesses riding a unicorn change too
-    if (u.rider) u.riderG.innerHTML = riderSVG(u.rider.def, undefined, 'riderclip', 0.95);
   });
   panel.hidden = true;
 });
