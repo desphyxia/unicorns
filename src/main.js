@@ -678,7 +678,7 @@ function frame(now) {
   party.update(dt, t);
   stableTools.update(dt);
   const partyHidden = mode !== 'castle';
-  if (partyBtn.hidden !== partyHidden) partyBtn.hidden = partyHidden;
+  if (partyBtn.hidden !== partyHidden) { partyBtn.hidden = partyHidden; tripBtn.hidden = partyHidden; }
 
   for (const c of chars) {
     if (c.mount || c.hidden) continue;
@@ -774,6 +774,21 @@ const stableTools = initStable(ctx);
 initPhotos({ audio, getSource: () => (mode === 'trip' ? document.getElementById('trip') : svg) });
 
 const partyBtn = document.getElementById('partyBtn');
+const tripBtn = document.getElementById('tripBtn');
+// one tap to go on a trip: Elsa (or whoever is free) hops on a unicorn and the trip menu opens
+tripBtn.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (busy || mode !== 'castle') return;
+  party.stop(true);
+  let u = chars.find((c) => c.kind === 'unicorn' && c.rider);
+  if (!u) {
+    const p = chars.find((c) => c.def.id === 'elsa' && !c.mount) || chars.find((c) => c.kind === 'princess' && !c.mount);
+    u = chars.filter((c) => c.kind === 'unicorn' && !c.rider).sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y))[0];
+    mount(p, u);
+  }
+  audio.neigh();
+  openPicker(u);
+});
 function todayKey() {
   const d = new Date();
   return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
