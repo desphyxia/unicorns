@@ -174,8 +174,8 @@ export function princessSVG(p, look) {
 }
 
 // A princess sitting on a unicorn's back (legs hidden by the clip, which the caller defines).
-export function riderSVG(p, look, clipId = 'riderclip') {
-  return `<g class="rider" transform="translate(-4 -40) scale(.66)" clip-path="url(#${clipId})">${princessSVG(p, look)}</g>`;
+export function riderSVG(p, look, clipId = 'riderclip', scale = 0.66) {
+  return `<g class="rider" transform="translate(-4 ${(-40 + (scale - 0.66) * 20).toFixed(1)}) scale(${scale})" clip-path="url(#${clipId})">${princessSVG(p, look)}</g>`;
 }
 
 // Unicorns face right; the caller flips them.

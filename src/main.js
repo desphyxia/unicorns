@@ -72,6 +72,8 @@ function make(def, kind, index) {
       ? `<circle cx="-6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><circle cx="6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><path d="M-9.6,-88.4 q3.3,3.4 6.6,0 M3,-88.4 q3.3,3.4 6.6,0" stroke="#33201a" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
       : `<circle cx="-6" cy="-88" r="3.8" fill="${def.skin}"/><circle cx="6" cy="-88" r="3.8" fill="${def.skin}"/><path d="M-9.5,-88 q3.5,3.5 7,0 M2.5,-88 q3.5,3.5 7,0" stroke="#3b2a4a" stroke-width="1.7" fill="none" stroke-linecap="round"/>`)
     : `<circle cx="72" cy="-100" r="5.2" fill="${def.body}"/><path d="M66.5,-100 q5.5,4.5 11,0" stroke="#3b2a4a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const blanketG = el('g', { style: 'display:none' }, bodyWrap); // tucked in when she sleeps in her bed
+  blanketG.innerHTML = '<rect x="-37" y="-58" width="74" height="64" rx="16" fill="#ff6b8b" opacity=".92"/><path d="M-37,-44 H37" stroke="#fff" stroke-width="5" opacity=".55"/>';
   const hatG = el('g', { style: 'display:none' }, bodyWrap);
   if (kind === 'princess') hatG.innerHTML = '<path d="M-13,-117 L2,-158 L15,-117Z" fill="#ff8fc7" stroke="#fff" stroke-width="2"/><path d="M-9,-128 L10,-128 M-6,-139 L7,-139" stroke="#fff" stroke-width="3" opacity=".8"/><circle cx="2" cy="-160" r="6" fill="#ffd84d"/>';
   const foamG = el('g', {}, bodyWrap);
@@ -86,12 +88,12 @@ function make(def, kind, index) {
   layer.appendChild(g);
 
   const c = {
-    def, kind, index, el: g, flip, art, riderG, sleepG, hatG, body: bodyWrap, shadow, dirtG, foamEls: [...foamG.children],
+    def, kind, index, el: g, flip, art, riderG, sleepG, blanketG, hatG, body: bodyWrap, shadow, dirtG, foamEls: [...foamG.children],
     scale: kind === 'unicorn' ? 0.85 : 1,
     walk: kind === 'unicorn' ? rand(40, 60) : rand(45, 70),
     speed: 50, x: 0, y: 0, tx: 0, ty: 0, wait: rand(0, 2), face: 1,
     home: null, moving: false, dragging: false, hopT: -1, phase: rand(0, 6),
-    rider: null, mount: null, hidden: false, sleeping: false, zzzT: 0, munch: 0, joy: 0, groom: 0, water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
+    rider: null, mount: null, hidden: false, sleeping: false, lie: 0, lieRot: 0, lieShown: false, zzzT: 0, munch: 0, joy: 0, groom: 0, water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
   };
   c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) ? saved.homes[def.id] : null;
   const b = boundsOf(c);
@@ -100,6 +102,15 @@ function make(def, kind, index) {
   chars.push(c);
   g.addEventListener('pointerdown', (e) => onDown(e, c));
   return c;
+}
+
+// where a princess lies down in her room's bed (head on the pillow)
+function bedSpot(i) {
+  const r = ROOMS[i];
+  const bedLeft = r.i % 2 === 0;
+  const bx = bedLeft ? r.x + 12 : r.x + r.w - 112;
+  const fy = r.y + r.h - 22;
+  return bedLeft ? { x: bx + 96, y: fy - 20, rot: -90 } : { x: bx + 6, y: fy - 20, rot: 90 };
 }
 
 function boundsOf(c) {
@@ -379,7 +390,7 @@ function mount(p, u) {
   p.mount = u;
   u.rider = p;
   stash.appendChild(p.el);
-  u.riderG.innerHTML = riderSVG(p.def, saved.looks[p.def.id]);
+  u.riderG.innerHTML = riderSVG(p.def, saved.looks[p.def.id], 'riderclip', 0.95); // bigger in the castle, easy to see
   u.riderG.style.display = '';
   u.hopT = 0;
   u.wait = 3;
@@ -747,10 +758,27 @@ function frame(now) {
       c.sleepG.style.display = sleepNow ? '' : 'none';
       c.zzzT = rand(0.2, 1.5);
       if (sleepNow && c.kind === 'unicorn') { c.tx = rand(SLEEP.x0, SLEEP.x1); c.ty = rand(SLEEP.y0, SLEEP.y1); c.speed = c.walk; }
+      if (sleepNow && c.kind === 'princess' && c.home !== null) { const b = bedSpot(c.home); c.tx = b.x; c.ty = b.y; c.speed = c.walk * 1.5; }
     }
     if (c.sleeping) {
       c.zzzT -= dt;
-      if (c.zzzT <= 0) { c.zzzT = 2.4 + rand(0, 1); zzz(c.x + 22, c.y - (c.kind === 'unicorn' ? 140 : 125)); }
+      if (c.zzzT <= 0) {
+        c.zzzT = 2.4 + rand(0, 1);
+        if (c.lie > 0.5) zzz(c.x + (c.lieRot < 0 ? -75 : 75), c.y - 34); else zzz(c.x + 22, c.y - (c.kind === 'unicorn' ? 140 : 125));
+      }
+    }
+    // lie down once she has reached her bed, stand up again in the morning
+    const bedNow = c.kind === 'princess' && c.sleeping && c.home !== null;
+    const spot = bedNow ? bedSpot(c.home) : null;
+    const inBed = !!spot && Math.hypot(c.x - spot.x, c.y - spot.y) < 4;
+    if (spot) c.lieRot = spot.rot;
+    c.lie += ((inBed ? 1 : 0) - c.lie) * Math.min(1, dt * (inBed ? 4 : 9));
+    if (c.lie < 0.01) c.lie = 0;
+    const showBlanket = c.lie > 0.6;
+    if (showBlanket !== c.lieShown) {
+      c.lieShown = showBlanket;
+      c.blanketG.style.display = showBlanket ? '' : 'none';
+      if (showBlanket) c.blanketG.firstChild.setAttribute('fill', RAINBOW[c.home % 6]);
     }
     if (c.munch > 0) c.munch -= dt;
     if (!c.dragging && !c.water) {
@@ -791,13 +819,13 @@ function frame(now) {
     }
 
     const lift = c.dragging ? 14 : 0;
-    const s = c.scale * (mode === 'stable' && c.kind === 'unicorn' ? 1.3 : 1) * (c.dragging ? 1.18 : 1);
+    const s = c.scale * (mode === 'stable' && c.kind === 'unicorn' ? 1.3 : 1) * (c.dragging ? 1.18 : 1) * (1 - 0.2 * c.lie);
     const wave = inW ? Math.sin((t + c.phase) * 2.2) * 3 : 0;
     const bob = (inW ? wave : c.moving && c.speed < 200 ? Math.abs(Math.sin((t + c.phase) * 9)) * 4 : Math.sin((t + c.phase) * 2) * 1.2) + (c.munch > 0 ? Math.sin(t * 28) * 3 * Math.min(1, c.munch) : 0);
     const sway = inW ? Math.sin((t + c.phase) * 1.3) * 4 : 0;
     c.el.setAttribute('transform', `translate(${(c.x + sway).toFixed(1)} ${(c.y - lift - hop).toFixed(1)}) scale(${s})`);
-    c.flip.setAttribute('transform', `scale(${c.face} 1)`);
-    c.body.setAttribute('transform', `translate(0 ${-bob.toFixed(2)})`);
+    c.flip.setAttribute('transform', c.lie > 0 ? `rotate(${(c.lieRot * c.lie).toFixed(1)}) scale(${c.face} 1)` : `scale(${c.face} 1)`);
+    c.body.setAttribute('transform', `translate(0 ${(-bob * (1 - c.lie)).toFixed(2)})`);
     if (inW) c.shadow.setAttribute('transform', `translate(0 -22) scale(${(1.1 + Math.sin((t + c.phase) * 3) * 0.1).toFixed(2)} 1)`);
     else c.shadow.setAttribute('transform', `translate(0 ${lift + hop}) scale(${1 - (lift + hop) / 150})`);
   }
