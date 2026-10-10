@@ -69,7 +69,7 @@ function make(def, kind, index) {
   const sleepG = el('g', { style: 'display:none' }, bodyWrap);
   sleepG.innerHTML = kind === 'princess'
     ? (def.hairStyle === 'wavy'
-      ? `<circle cx="-7" cy="-88" r="4.8" fill="${def.skin}"/><circle cx="7" cy="-88" r="4.8" fill="${def.skin}"/><path d="M-10.8,-88 q3.8,3.8 7.6,0 M3.2,-88 q3.8,3.8 7.6,0" stroke="#33201a" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
+      ? `<circle cx="-6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><circle cx="6.3" cy="-88.6" r="4.4" fill="${def.skin}"/><path d="M-9.6,-88.4 q3.3,3.4 6.6,0 M3,-88.4 q3.3,3.4 6.6,0" stroke="#33201a" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
       : `<circle cx="-6" cy="-88" r="3.8" fill="${def.skin}"/><circle cx="6" cy="-88" r="3.8" fill="${def.skin}"/><path d="M-9.5,-88 q3.5,3.5 7,0 M2.5,-88 q3.5,3.5 7,0" stroke="#3b2a4a" stroke-width="1.7" fill="none" stroke-linecap="round"/>`)
     : `<circle cx="72" cy="-100" r="5.2" fill="${def.body}"/><path d="M66.5,-100 q5.5,4.5 11,0" stroke="#3b2a4a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
   const hatG = el('g', { style: 'display:none' }, bodyWrap);
