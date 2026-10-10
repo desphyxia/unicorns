@@ -1,5 +1,6 @@
 import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
 import { sceneSVG, princessSVG, unicornSVG, ROOMS, GROUND, roomBounds } from './art.js';
+import { openWardrobe } from './wardrobe.js';
 import * as audio from './audio.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -11,7 +12,7 @@ const highlights = [...svg.querySelectorAll('.room-hl')];
 
 // ---------- saved state ----------
 const KEY = 'elsas-castle-v1';
-let saved = { homes: {}, hinted: false };
+let saved = { homes: {}, looks: {}, hinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* ignore */ } }
 
@@ -27,7 +28,7 @@ function make(def, kind, index) {
   shadow.setAttribute('ry', 6);
   shadow.setAttribute('fill', 'rgba(80,40,100,.18)');
   const flip = document.createElementNS(NS, 'g');
-  flip.innerHTML = kind === 'princess' ? princessSVG(def) : unicornSVG(def);
+  flip.innerHTML = kind === 'princess' ? princessSVG(def, saved.looks[def.id]) : unicornSVG(def);
   const hit = document.createElementNS(NS, 'rect');
   if (kind === 'princess') { hit.setAttribute('x', -42); hit.setAttribute('y', -135); hit.setAttribute('width', 84); hit.setAttribute('height', 142); }
   else { hit.setAttribute('x', -70); hit.setAttribute('y', -160); hit.setAttribute('width', 170); hit.setAttribute('height', 168); }
@@ -157,7 +158,20 @@ window.addEventListener('pointercancel', endDrag);
 function tap(c) {
   c.hopT = 0;
   sparkle(c.x, c.y - (c.kind === 'unicorn' ? 90 : 70), 8);
-  if (c.kind === 'unicorn') audio.neigh(); else audio.chime(3 + (c.index * 2) % 7);
+  if (c.kind === 'unicorn') { audio.neigh(); return; }
+  audio.chime(3 + (c.index * 2) % 7);
+  // tapping a princess opens her wardrobe
+  openWardrobe({
+    def: c.def,
+    look: saved.looks[c.def.id],
+    onChange: (look) => {
+      saved.looks[c.def.id] = look;
+      save();
+      c.flip.innerHTML = princessSVG(c.def, look);
+      c.body = c.flip.querySelector('.body');
+    },
+    onClose: () => { idle = 0; c.hopT = 0; sparkle(c.x, c.y - 70, 14); },
+  });
 }
 
 // ---------- hint: a little hand shows how to move a princess in ----------
@@ -273,7 +287,7 @@ const snd = document.getElementById('snd');
 snd.addEventListener('change', () => audio.setEnabled(snd.checked));
 document.getElementById('reset').addEventListener('click', () => {
   if (!confirm('Move everyone back out and start over?')) return;
-  saved = { homes: {}, hinted: false };
+  saved = { ...saved, homes: {}, hinted: false };
   save();
   chars.forEach((c) => {
     if (c.kind !== 'princess') return;

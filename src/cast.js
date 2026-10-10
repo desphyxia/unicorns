@@ -19,3 +19,7 @@ export const UNICORNS = [
   { id: 'u5', body: '#fff3d6', hoof: '#ffd98a' },
   { id: 'u6', body: '#efe3ff', hoof: '#d2b8ff' },
 ];
+
+// Colour choices in the wardrobe: the rainbow plus pink and white (gold first for tiaras).
+export const PALETTE = [...RAINBOW, '#ff8fc7', '#ffffff'];
+export const TIARA_PALETTE = ['#ffd84d', '#ffffff', '#ff8fc7', '#5cc8ff', '#a98bff', '#6edc8c', '#ff9a5c', '#ff6b8b'];

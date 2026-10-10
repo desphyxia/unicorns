@@ -19,17 +19,92 @@ export function roomBounds(r) {
   return { x0: r.x + 50, x1: r.x + r.w - 50, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
 }
 
-export function princessSVG(p) {
+// ---- wardrobe pieces: 6 styles each, all recolourable ----
+export const STYLE_COUNT = 6;
+
+const star = (x, y, r, fill) =>
+  `<path transform="translate(${x} ${y}) scale(${r / 9})" d="M0,-9 L2.5,-2.5 L9,0 L2.5,2.5 L0,9 L-2.5,2.5 L-9,0 L-2.5,-2.5Z" fill="${fill}"/>`;
+
+const BODICE = `M-12,-74 L12,-74 L14,-58 L-14,-58 Z`;
+const GOWN = `M-12,-74 L12,-74 L32,-14 Q0,-2 -32,-14 Z`;
+const hem = `<path d="M-30,-18 Q0,-6 30,-18" stroke="#fff" stroke-width="4" fill="none" opacity=".6" stroke-linecap="round"/>`;
+const sash = `<path d="M-13,-62 L13,-62 L14,-57 L-14,-57 Z" fill="#fff" opacity=".6"/>`;
+
+export function dressSVG(style, c) {
+  switch (style % STYLE_COUNT) {
+    case 1: // puffy party dress
+      return `<path d="${BODICE}" fill="${c}"/>
+        <path d="M-13,-58 C-42,-58 -40,-24 -27,-27 Q-18,-20 -9,-27 Q0,-20 9,-27 Q18,-20 27,-27 C40,-24 42,-58 13,-58 Z" fill="${c}"/>
+        <path d="M-27,-27 Q-18,-20 -9,-27 Q0,-20 9,-27 Q18,-20 27,-27" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/>${sash}`;
+    case 2: // mermaid gown
+      return `<path d="M-12,-74 L12,-74 L14,-44 Q16,-28 40,-6 Q0,-1 -40,-6 Q-16,-28 -14,-44 Z" fill="${c}"/>
+        <path d="M-36,-9 Q0,-1 36,-9" stroke="#fff" stroke-width="4" fill="none" opacity=".6" stroke-linecap="round"/>${sash}`;
+    case 3: // layered tutu
+      return `<ellipse cx="0" cy="-32" rx="35" ry="10" fill="${c}" opacity=".75"/>
+        <ellipse cx="0" cy="-41" rx="29" ry="10" fill="${c}" opacity=".88"/>
+        <ellipse cx="0" cy="-50" rx="23" ry="9" fill="${c}"/>
+        <path d="${BODICE}" fill="${c}"/>${sash}`;
+    case 4: // sleeves and a big bow
+      return `<path d="${GOWN}" fill="${c}"/>${hem}
+        <circle cx="-14" cy="-68" r="8" fill="${c}"/><circle cx="14" cy="-68" r="8" fill="${c}"/>
+        <path d="M0,-60 L-12,-68 L-12,-52 Z M0,-60 L12,-68 L12,-52 Z" fill="#fff"/><circle cx="0" cy="-60" r="3.5" fill="#fff"/>`;
+    case 5: // starry gown
+      return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}
+        ${star(-9, -42, 5, '#fff')}${star(11, -32, 4.5, '#fff')}${star(2, -52, 4, '#fff')}${star(-19, -24, 4, '#fff')}${star(19, -46, 3.5, '#fff')}`;
+    default: // classic ball gown
+      return `<path d="${GOWN}" fill="${c}"/>${hem}${sash}`;
+  }
+}
+
+// Foot drawn for the left foot at the origin; toes point to -x. The right foot is mirrored.
+function foot(style, c) {
+  switch (style % STYLE_COUNT) {
+    case 1: return `<path d="M8,-1 Q8,-9 0,-8 Q-8,-8 -17,-1 Q-6,2 8,-1Z" fill="${c}"/><circle cx="-1" cy="-6" r="2" fill="#fff" opacity=".8"/>`;
+    case 2: return `<rect x="-6" y="-27" width="12" height="25" rx="4" fill="${c}"/><ellipse cx="-2" cy="-3" rx="10" ry="5" fill="${c}"/><rect x="-7" y="-28" width="14" height="6" rx="3" fill="#fff" opacity=".8"/>`;
+    case 3: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/><circle cx="-3" cy="-7" r="3" fill="#fff"/><circle cx="3" cy="-7" r="3" fill="#fff"/><circle cx="0" cy="-7" r="1.6" fill="${c}"/>`;
+    case 4: return `<ellipse cx="0" cy="-3" rx="8" ry="4" fill="${c}"/><rect x="4" y="-7" width="4" height="7" rx="2" fill="${c}"/><path d="M-6,-5 Q0,-12 6,-5" stroke="#fff" stroke-width="2" fill="none"/>`;
+    case 5: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/>${star(0, -4, 3.6, '#fff')}`;
+    default: return `<ellipse cx="0" cy="-3" rx="9" ry="5" fill="${c}"/>`;
+  }
+}
+export function shoesSVG(style, c) {
+  return `<g transform="translate(-9 0)">${foot(style, c)}</g><g transform="translate(9 0) scale(-1 1)">${foot(style, c)}</g>`;
+}
+
+export function tiaraSVG(style, c) {
+  switch (style % STYLE_COUNT) {
+    case 1: // band with a big gem
+      return `<path d="M-17,-99 Q0,-112 17,-99 L17,-104 Q0,-117 -17,-104Z" fill="${c}" stroke="#e8b923" stroke-width="1"/>
+        <circle cx="0" cy="-111" r="5" fill="#ff6b8b" stroke="#fff" stroke-width="1.5"/>`;
+    case 2: // flower crown
+      return [[-15, -98], [-8, -105], [0, -108], [8, -105], [15, -98]].map(([x, y]) =>
+        `<circle cx="${x - 3}" cy="${y}" r="3.4" fill="${c}"/><circle cx="${x + 3}" cy="${y}" r="3.4" fill="${c}"/><circle cx="${x}" cy="${y - 3.4}" r="3.4" fill="${c}"/><circle cx="${x}" cy="${y + 2}" r="3.4" fill="${c}"/><circle cx="${x}" cy="${y}" r="2.4" fill="#fff6a8"/>`).join('');
+    case 3: // heart
+      return `<path d="M-17,-99 Q0,-110 17,-99" stroke="${c}" stroke-width="3" fill="none"/>
+        <path d="M0,-103 C-14,-111 -7,-124 0,-115 C7,-124 14,-111 0,-103Z" fill="${c}" stroke="#fff" stroke-width="1.5"/>`;
+    case 4: // big star
+      return `<path d="M-17,-99 Q0,-110 17,-99" stroke="${c}" stroke-width="3" fill="none"/>${star(0, -112, 13, c)}<circle cx="0" cy="-112" r="3" fill="#fff"/>`;
+    case 5: // bow headband
+      return `<path d="M-18,-97 Q0,-114 18,-97" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M11,-107 L23,-115 L23,-99 Z M11,-107 L-1,-115 L-1,-99 Z" fill="${c}"/><circle cx="11" cy="-107" r="3.5" fill="#fff"/>`;
+    default: // classic crown
+      return `<path d="M-13,-103 L-9,-114 L-4,-106 L0,-118 L4,-106 L9,-114 L13,-103 Z" fill="${c}" stroke="#e8b923" stroke-width="1"/>`;
+  }
+}
+
+export function defaultLook(p) {
+  return { dress: 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: 0, tiaraColor: p.tiara };
+}
+
+export function princessSVG(p, look) {
+  const l = { ...defaultLook(p), ...(look || {}) };
   return `<g class="body">
-  <ellipse cx="-9" cy="-3" rx="9" ry="5" fill="${p.shoes}"/>
-  <ellipse cx="9" cy="-3" rx="9" ry="5" fill="${p.shoes}"/>
   <rect x="-10" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   <rect x="4" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
+  ${shoesSVG(l.shoes, l.shoesColor)}
   <rect x="-24" y="-92" width="48" height="44" rx="16" fill="${p.hair}"/>
   <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${p.hair}"/>
-  <path d="M-12,-74 L12,-74 L32,-14 Q0,-2 -32,-14 Z" fill="${p.dress}"/>
-  <path d="M-30,-18 Q0,-6 30,-18" stroke="#fff" stroke-width="4" fill="none" opacity=".6" stroke-linecap="round"/>
-  <path d="M-8,-66 L8,-66 L10,-62 L-10,-62 Z" fill="#fff" opacity=".55"/>
+  ${dressSVG(l.dress, l.dressColor)}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <circle cx="0" cy="-90" r="17" fill="${p.skin}"/>
@@ -39,8 +114,7 @@ export function princessSVG(p) {
   <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
   <circle cx="10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
   <path d="M-4,-82 Q0,-78 4,-82" stroke="#c4476e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <path d="M-13,-103 L-9,-114 L-4,-106 L0,-118 L4,-106 L9,-114 L13,-103 Z" fill="${p.tiara}" stroke="#e8b923" stroke-width="1"/>
-  ${p.star ? '<circle cx="0" cy="-107" r="2.5" fill="#ff6b8b"/>' : ''}
+  ${tiaraSVG(l.tiara, l.tiaraColor)}
 </g>`;
 }
 
