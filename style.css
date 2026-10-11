@@ -241,7 +241,7 @@ html, body {
 /* the bathroom: brush the princess's teeth */
 #teeth { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; background: linear-gradient(160deg, #cdeeff, #e8f8ff 40%, #e6d8ff); touch-action: none; }
 #teeth[hidden] { display: none; }
-#teeth .w-stage { padding: 20vh 0 13vh; box-sizing: border-box; }
+#teeth .w-stage { padding: 21vh 0 13vh; box-sizing: border-box; }
 #teeth .w-preview svg { height: 62vh; }
 #teeth .w-name { bottom: 2.5vh; }
 #teeth .w-done { z-index: 5; }
@@ -260,38 +260,67 @@ html, body {
   .t-mouth { width: 90vw; }
 }
 
-/* the kitchen: make a salad */
-#kitchen { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; background: linear-gradient(160deg, #fff0c8, #ffe3f1 45%, #d9f5d3); touch-action: none; user-select: none; }
+/* the face picker never sits under the Done button: in landscape it starts to the right of it and wraps after six faces */
+@media (orientation: landscape) {
+  #teeth .w-who, #kitchen .w-who, .sec-hair .w-who, .sec-makeup .w-who { left: 19vh; transform: none; width: auto; max-width: calc(6 * 6.4vh + 5 * 1vh + 2px); justify-content: flex-start; }
+  #teeth .w-face, #kitchen .w-face, .sec-hair .w-face, .sec-makeup .w-face { width: 6.4vh; height: 6.4vh; }
+}
+
+/* the kitchen: make a salad or an ice cream */
+#kitchen { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; background: linear-gradient(160deg, #fff0c8, #ffe3f1 45%, #d9f5d3); touch-action: none; user-select: none; overflow: hidden; }
 #kitchen[hidden] { display: none; }
-#kitchen .w-stage { padding: 20vh 0 13vh; box-sizing: border-box; flex: 0.8; }
-#kitchen .w-preview svg { height: 60vh; }
+#kitchen .w-stage { padding: 20vh 0 13vh; box-sizing: border-box; flex: 1 1 0; min-width: 0; }
+#kitchen .w-preview svg { height: 56vh; }
 #kitchen .w-name { bottom: 2.5vh; }
 #kitchen .w-done { z-index: 5; }
-.k-side { flex: 1.5; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 2vh; padding-right: 2vw; box-sizing: border-box; }
-.k-tray { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1vh; }
-.k-ing { aspect-ratio: 1; border-radius: 22%; border: .6vh solid #fff; background: rgba(255, 255, 255, .85); padding: .6vh; box-shadow: 0 .6vh 1.2vh rgba(120, 90, 40, .18); touch-action: none; }
+.k-side { flex: 1.6 1 0; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 1.6vh; padding: 0 2vw 0 0; box-sizing: border-box; }
+.k-modes { display: flex; justify-content: center; gap: 2vh; }
+.k-mode { width: 9vh; height: 9vh; border-radius: 50%; border: .7vh solid #fff; background: rgba(255, 255, 255, .7); padding: 1.2vh; box-shadow: 0 .6vh 1.2vh rgba(120, 90, 40, .2); }
+.k-mode.sel { background: #ffd23f; transform: scale(1.12); }
+.k-mode svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.k-tray { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 1vh; }
+.k-ing { width: 100%; min-width: 0; aspect-ratio: 1; border-radius: 22%; border: .5vh solid #fff; background: rgba(255, 255, 255, .85); padding: .5vh; box-shadow: 0 .6vh 1.2vh rgba(120, 90, 40, .18); touch-action: none; overflow: hidden; }
 .k-ing svg { width: 100%; height: 100%; display: block; pointer-events: none; }
 .k-ing:active { transform: scale(.92); }
 .k-bowlrow { display: flex; align-items: center; justify-content: center; gap: 1.5vw; }
-.k-bowl { width: min(36vw, 56vh); height: auto; overflow: visible; filter: drop-shadow(0 1.6vh 1.6vh rgba(120, 60, 160, .2)); }
+.k-bowl { flex: 1 1 0; min-width: 0; max-width: 58vh; height: auto; overflow: visible; filter: drop-shadow(0 1.6vh 1.6vh rgba(120, 60, 160, .2)); }
 .k-bowl.shake { animation: kshake .5s ease-in-out; }
 @keyframes kshake { 0%, 100% { transform: none; } 20% { transform: translateY(-1.5vh) rotate(-3deg); } 50% { transform: translateY(-.5vh) rotate(3deg); } 75% { transform: translateY(-1vh) rotate(-2deg); } }
 .kdrop { animation: kdrop .35s ease-in; transform-box: fill-box; transform-origin: center; }
 @keyframes kdrop { from { transform: translateY(-80px) scale(1.5); opacity: 0; } to { transform: none; opacity: 1; } }
-.k-tool { width: 12vh; height: 12vh; border-radius: 50%; border: .8vh solid #fff; background: #a98bff; padding: 2vh; box-shadow: 0 1vh 2vh rgba(120, 60, 160, .25); flex: none; }
+.k-tool { width: 10vh; height: 10vh; border-radius: 50%; border: .7vh solid #fff; background: #a98bff; padding: 1.6vh; box-shadow: 0 1vh 2vh rgba(120, 60, 160, .25); flex: none; }
 .k-tool.serve { background: #ff8fc7; }
-.k-tool svg { width: 100%; height: 100%; pointer-events: none; }
+.k-tool svg { width: 100%; height: 100%; pointer-events: none; display: block; }
 .k-ghost { position: fixed; width: 12vh; height: 12vh; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; z-index: 9; filter: drop-shadow(0 1vh 1vh rgba(0, 0, 0, .25)); }
 .k-ghost svg { width: 100%; height: 100%; }
+/* ice cream */
+.i-wrap { display: flex; align-items: center; justify-content: center; gap: 2vw; min-height: 0; }
+.i-cone { height: 56vh; width: auto; flex: none; overflow: visible; filter: drop-shadow(0 1.6vh 1.6vh rgba(120, 60, 160, .2)); }
+.i-cone.shake { animation: kshake .5s ease-in-out; }
+.i-pick { flex: 1 1 0; min-width: 0; max-width: 46vh; display: flex; flex-direction: column; gap: 1vh; }
+.i-grp { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .8vh; padding: .8vh; border-radius: 2vh; background: rgba(255, 255, 255, .55); }
+.i-grp.tp { background: rgba(255, 240, 180, .7); }
+.i-grp.sp { background: rgba(200, 235, 255, .7); }
+.i-btn { width: 100%; min-width: 0; aspect-ratio: 1; border-radius: 28%; border: .45vh solid #fff; background: #fff; padding: .4vh; box-shadow: 0 .4vh .8vh rgba(120, 90, 40, .2); overflow: hidden; touch-action: none; }
+.i-btn svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.i-btn:active { transform: scale(.9); }
+.i-tools { display: flex; justify-content: center; gap: 3vh; }
+.bump { animation: kshake .35s; }
 @media (orientation: portrait) {
   #kitchen { flex-direction: column; justify-content: center; }
-  #kitchen .w-stage { flex: 0 0 auto; height: auto; padding: 22vh 0 9vh; }
-  #kitchen .w-preview svg { height: 24vh; }
-  .k-side { flex: 0 0 auto; height: auto; padding: 0 2vw; }
-  .k-tray { grid-template-columns: repeat(6, 1fr); }
-  .k-bowl { width: 50vw; }
-  .k-tool { width: 10vh; height: 10vh; }
+  #kitchen .w-stage { flex: 0 0 auto; height: auto; padding: 22vh 0 9vh; width: 100%; }
+  #kitchen .w-preview svg { height: 22vh; }
+  .k-side { flex: 0 0 auto; height: auto; width: 100%; padding: 0 2vw; }
+  .k-tray { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .k-mode { width: 7vh; height: 7vh; }
+  .k-tool { width: 8vh; height: 8vh; }
+  .i-cone { height: 30vh; }
+  .i-pick { max-width: none; }
 }
-#kitchen .w-stage { flex: 1; }
-#kitchen .w-who, #teeth .w-who, .sec-hair .w-who, .sec-makeup .w-who { left: 56%; }
-#kitchen .w-who, #teeth .w-who { left: 63%; }
+
+/* the game is drawn for a tablet held sideways: in portrait, show a picture asking to turn it */
+#rotate { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; background: linear-gradient(160deg, #bfe3ff, #ffe3f4 60%, #fff3d6); }
+#rotate svg { width: min(60vw, 40vh); height: auto; }
+.rot-tab { transform-origin: 100px 80px; animation: rottab 2.4s ease-in-out infinite; }
+@keyframes rottab { 0%, 25% { transform: rotate(0); } 60%, 100% { transform: rotate(90deg); } }
+@media (orientation: portrait) { #rotate { display: flex; } }
