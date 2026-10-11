@@ -6,10 +6,10 @@ import { stableSVG } from './stableart.js';
 export const W = 1600;
 export const H = 900;
 
-// Castle rooms: a stepped dollhouse with 2 + 4 + 3 = 9 bedrooms (the last cell is the bathroom).
+// Castle rooms: a stepped dollhouse with 2 + 4 + 2 = 8 bedrooms (the kitchen and the bathroom take the other two cells).
 export const ROOM_COLORS = ['#ffb3c7', '#ffcf9e', '#fff0a0', '#bfeabf', '#a9d8ff', '#d3bdff', '#ffc2e2', '#ffe0b8', '#c8f0ff', '#e0cfff'];
 export const ROOMS = [];
-[{ y: 220, cols: 2, x0: 590 }, { y: 400, cols: 4, x0: 380 }, { y: 580, cols: 3, x0: 380 }].forEach((row) => {
+[{ y: 220, cols: 2, x0: 590 }, { y: 400, cols: 4, x0: 380 }, { y: 580, cols: 2, x0: 590 }].forEach((row) => {
   for (let c = 0; c < row.cols; c++) {
     const i = ROOMS.length;
     ROOMS.push({ i, x: row.x0 + c * 210, y: row.y, w: 210, h: 180, color: ROOM_COLORS[i] });
@@ -18,6 +18,14 @@ export const ROOMS = [];
 
 // Where characters may walk.
 export const GROUND = { x0: 290, x1: 1330, y0: 815, y1: 880 };
+// where a sleeper lies in a room's bunk bed (slot 0 = lower bunk, 1 = upper bunk)
+export function bedSpot(r, slot = 0) {
+  const bedLeft = r.i % 2 === 0;
+  const bx = bedLeft ? r.x + 26 : r.x + r.w - 126;
+  const fy = r.y + r.h - 22;
+  const y = fy - 18 - (slot ? 54 : 0);
+  return bedLeft ? { x: bx + 96, y, rot: -90 } : { x: bx + 6, y, rot: 90 };
+}
 export function roomBounds(r) {
   return { x0: r.x + 45, x1: r.x + r.w - 45, y0: r.y + r.h - 18, y1: r.y + r.h - 8 };
 }
@@ -123,7 +131,7 @@ export function tiaraSVG(style, c) {
 
 export function defaultLook(p) {
   return {
-    dress: 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: 0, tiaraColor: p.tiara,
+    dress: p.dressStyle || 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: p.tiaraStyle || 0, tiaraColor: p.tiara,
     hairStyle: p.hairStyle || 0, hairColor: p.hair, hairAcc: 0, hairAccColor: '#ff8fc7',
     lips: 0, lipsColor: '#ff6b8b', eyes: 0, eyesColor: '#a98bff', cheeks: 0, cheeksColor: '#ff8f9f',
   };
@@ -137,8 +145,9 @@ const blend = (a, b, k) => {
 };
 const highlight = (c) => blend(c, '#fff0d8', 0.4);
 
-function hairBack(style, c) {
+function hairBack(style, c, king) {
   const c2 = highlight(c);
+  if (king && style % 6 === 0) return `<ellipse cx="0" cy="-94" rx="23" ry="23" fill="${c}"/>`; // the King's short hair
   switch (style % 6) {
     case 1: // wavy curls with a little tied-back tuft (Elsa's own)
       return `<path d="M-19,-104 Q-42,-100 -38,-76 Q-36,-62 -28,-60 Q-30,-80 -22,-90Z" fill="${c}"/>
@@ -169,8 +178,9 @@ function hairBack(style, c) {
   <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>`;
   }
 }
-function fringe(style, c) {
+function fringe(style, c, king) {
   const c2 = highlight(c);
+  if (king && style % 6 === 0) return `<path d="M-19,-92 Q-22,-114 0,-113 Q22,-114 19,-92 Q15,-102 8,-101 Q0,-107 -8,-101 Q-15,-102 -19,-92Z" fill="${c}"/><path d="M-10,-108 Q0,-111 10,-108" stroke="${c2}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>`;
   switch (style % 6) {
     case 1:
       return `<path d="M-21,-90 Q-21,-113 4,-111 Q23,-109 22,-92 Q13,-103 -1,-100 Q-9,-97 -14,-88 Q-18,-85 -21,-90Z" fill="${c}"/>
@@ -245,6 +255,20 @@ function cheeksSVG(style, c, g) {
   }
 }
 
+// the King's tunic with trousers (three styles: caped, striped, starry) and his beard; Sara's pearl necklace
+const pearls = `<path d="M-9,-73 Q0,-65 9,-73" stroke="#fff" stroke-width="3.4" fill="none" stroke-dasharray="0.1 4.4" stroke-linecap="round"/>`;
+const beard = (c) => `<path d="M-17,-88 Q-19,-66 0,-64 Q19,-66 17,-88 Q12,-77 0,-76.5 Q-12,-77 -17,-88Z" fill="${c}"/><path d="M-9,-83 Q-4,-86.5 0,-84 Q4,-86.5 9,-83 Q4,-81 0,-82.6 Q-4,-81 -9,-83Z" fill="${c}"/>`;
+function kingOutfit(style, c) {
+  const st = style % 3;
+  const cape = st === 0 ? `<path d="M-14,-74 L-27,-16 Q0,-8 27,-16 L14,-74Z" fill="#d6455d"/>` : '';
+  const extra = st === 1 ? [-60, -50, -40].map((y) => `<rect x="-16" y="${y}" width="32" height="4" fill="#fff" opacity=".55"/>`).join('')
+    : st === 2 ? star(-8, -56, 4.5, '#fff') + star(9, -46, 4, '#fff') + star(-4, -38, 3.5, '#fff') : '';
+  return `${cape}<rect x="-12" y="-32" width="11" height="29" rx="4" fill="#5a4a8c"/><rect x="1" y="-32" width="11" height="29" rx="4" fill="#5a4a8c"/>
+    <path d="M-14,-74 L14,-74 L17,-30 L-17,-30Z" fill="${c}"/>${extra}
+    <rect x="-17" y="-42" width="34" height="6" fill="#7a4a2c"/><rect x="-3.5" y="-43" width="7" height="8" rx="1.5" fill="#ffd84d"/>
+    <path d="M-15,-74 Q0,-66 15,-74 L15,-69 Q0,-61 -15,-69Z" fill="#fff"/>${[-9, 0, 9].map((x) => `<circle cx="${x}" cy="${-67 + (x === 0 ? 1.5 : 0)}" r="1.1" fill="#4a3a5a"/>`).join('')}`;
+}
+
 export function princessSVG(p, look) {
   const l = { ...defaultLook(p), ...(look || {}) };
   const g = faceGeom(p);
@@ -252,13 +276,13 @@ export function princessSVG(p, look) {
   <rect x="-10" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   <rect x="4" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   ${shoesSVG(l.shoes, l.shoesColor)}
-  ${hairBack(l.hairStyle, l.hairColor)}
-  ${dressSVG(l.dress, l.dressColor)}
+  ${hairBack(l.hairStyle, l.hairColor, p.king)}
+  ${p.king ? kingOutfit(l.dress, l.dressColor) : dressSVG(l.dress, l.dressColor)}${p.queen ? pearls : ''}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   ${p.face === 'elsa' ? `<path d="M0,-107 C11,-107 18.5,-99 18.5,-89 C18.5,-79 12,-72 0,-71.5 C-12,-72 -18.5,-79 -18.5,-89 C-18.5,-99 -11,-107 0,-107Z" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
-  ${fringe(l.hairStyle, l.hairColor)}
-  ${face(p)}
+  ${fringe(l.hairStyle, l.hairColor, p.king)}
+  ${face(p)}${p.king ? beard(l.hairColor) : ''}
   ${cheeksSVG(l.cheeks, l.cheeksColor, g)}${eyesSVG(l.eyes, l.eyesColor, g)}${lipsSVG(l.lips, l.lipsColor, g)}
   ${hairAccSVG(l.hairAcc, l.hairAccColor)}
   ${tiaraSVG(l.tiara, l.tiaraColor)}
@@ -362,9 +386,21 @@ function flower(x, y, c) {
     <circle r="3.5" fill="#fff6a8"/></g>`;
 }
 
+// a bunk bed, 100 wide: two mattresses with rainbow blankets, pillows, posts and a little ladder
+function bunk(bx, fy, bedLeft, i) {
+  const pil = bedLeft ? bx + 8 : bx + 46;
+  const blk = bedLeft ? bx + 44 : bx + 6;
+  const lad = bedLeft ? bx - 16 : bx + 105;
+  const bed = (y, col) => `<rect x="${bx + 4}" y="${y}" width="92" height="14" rx="6" fill="#fff"/><rect x="${pil}" y="${y - 9}" width="46" height="14" rx="7" fill="#fff" stroke="#f0e6f6" stroke-width="1.5"/><rect x="${blk}" y="${y - 4}" width="50" height="16" rx="6" fill="${col}" opacity=".9"/>`;
+  return `<rect x="${bx}" y="${fy - 112}" width="7" height="112" rx="3" fill="#d9b48f"/><rect x="${bx + 93}" y="${fy - 112}" width="7" height="112" rx="3" fill="#d9b48f"/>
+    ${bed(fy - 30, RAINBOW[i % 6])}${bed(fy - 84, RAINBOW[(i + 3) % 6])}
+    <rect x="${bx + 2}" y="${fy - 100}" width="96" height="5" rx="2.5" fill="#e8c9a6"/>
+    <path d="M${lad},${fy - 86} V${fy} M${lad + 11},${fy - 86} V${fy}" stroke="#d9b48f" stroke-width="4" stroke-linecap="round"/>${[-70, -50, -30, -10].map((dy) => `<path d="M${lad},${fy + dy} H${lad + 11}" stroke="#d9b48f" stroke-width="3.5" stroke-linecap="round"/>`).join('')}`;
+}
+
 function room(r) {
   const bedLeft = r.i % 2 === 0;
-  const bx = bedLeft ? r.x + 12 : r.x + r.w - 112;
+  const bx = bedLeft ? r.x + 26 : r.x + r.w - 126;
   const wx = r.x + r.w / 2 - 24;
   const fy = r.y + r.h - 22;
   const lampX = bedLeft ? r.x + r.w - 28 : r.x + 28;
@@ -373,20 +409,19 @@ function room(r) {
     <rect x="${r.x}" y="${fy}" width="${r.w}" height="22" fill="#ffffff" opacity=".45"/>
     <path d="M${wx},${r.y + 100} V${r.y + 56} a24,24 0 0 1 48,0 V${r.y + 100} Z" fill="#dff3ff" stroke="#fff" stroke-width="5"/>
     <path d="M${wx + 24},${r.y + 32} V${r.y + 100} M${wx},${r.y + 72} H${wx + 48}" stroke="#fff" stroke-width="3"/>
-    <rect x="${bx}" y="${fy - 36}" width="100" height="36" rx="10" fill="#fff" opacity=".85"/>
-    <rect x="${bx + (bedLeft ? 6 : 46)}" y="${fy - 46}" width="48" height="24" rx="11" fill="#fff"/>
-    <rect x="${bx + (bedLeft ? 44 : 4)}" y="${fy - 30}" width="52" height="26" rx="8" fill="${RAINBOW[r.i % 6]}" opacity=".85"/>
+    ${bunk(bx, fy, bedLeft, r.i)}
     <path d="M${lampX},${fy} v-46" stroke="#fff" stroke-width="4"/>
     <circle cx="${lampX}" cy="${fy - 54}" r="10" fill="#fff6a8"/>
     <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#fff" stroke-width="6"/>
   </g>`;
 }
 
-// The special rooms: hairdressing and makeup in the top corners, and the bathroom (teeth brushing) bottom right.
+// The special rooms: hairdressing and makeup in the top corners, the bathroom (teeth brushing) bottom right and the kitchen (salads) bottom left.
 export const SALONS = [
   { i: 'hair', salon: true, x: 380, y: 220, w: 210, h: 180 },
   { i: 'makeup', salon: true, x: 1010, y: 220, w: 210, h: 180 },
   { i: 'bath', salon: true, x: 1010, y: 580, w: 210, h: 180 },
+  { i: 'kitchen', salon: true, x: 380, y: 580, w: 210, h: 180 },
 ];
 
 function salonRoom(r) {
@@ -394,7 +429,17 @@ function salonRoom(r) {
   const cx = r.x + r.w / 2;
   const hair = r.i === 'hair';
   const bath = r.i === 'bath';
-  const props = bath
+  const kitchen = r.i === 'kitchen';
+  const props = kitchen
+    ? `<path d="M${r.x + 120},${r.y + 100} V${r.y + 50} a30,30 0 0 1 60,0 V${r.y + 100} Z" fill="#dff3ff" stroke="#fff" stroke-width="5"/><path d="M${r.x + 150},${r.y + 20} V${r.y + 100}" stroke="#fff" stroke-width="3"/>
+       <rect x="${r.x + 14}" y="${r.y + 22}" width="86" height="40" rx="6" fill="#ffd9a8" stroke="#fff" stroke-width="3"/><circle cx="${r.x + 57}" cy="${r.y + 42}" r="4" fill="#fff"/><path d="M${r.x + 57},${r.y + 22} v40" stroke="#fff" stroke-width="2"/>
+       <rect x="${r.x + 8}" y="${fy - 54}" width="194" height="54" rx="6" fill="#ffc78a"/><rect x="${r.x + 4}" y="${fy - 60}" width="202" height="10" rx="5" fill="#fff"/>
+       <rect x="${r.x + 120}" y="${fy - 46}" width="64" height="40" rx="5" fill="#8a7bd8"/>
+       <circle cx="${r.x + 134}" cy="${fy - 38}" r="5" fill="#fff"/><circle cx="${r.x + 152}" cy="${fy - 38}" r="5" fill="#fff"/><circle cx="${r.x + 170}" cy="${fy - 38}" r="5" fill="#fff"/>
+       <g transform="translate(${r.x + 52} ${fy - 60})"><path d="M-26,0 q0,-20 26,-20 q26,0 26,20Z" fill="#fff" stroke="#6edc8c" stroke-width="3"/><circle cx="-10" cy="-14" r="7" fill="#6edc8c"/><circle cx="6" cy="-17" r="7" fill="#ff6b8b"/><circle cx="16" cy="-9" r="6" fill="#ffd23f"/><circle cx="-2" cy="-6" r="5" fill="#a98bff"/></g>
+       <g transform="translate(${r.x + 152} ${fy - 60})"><rect x="-20" y="-20" width="40" height="20" rx="4" fill="#ff8fc7"/><rect x="-24" y="-24" width="48" height="6" rx="3" fill="#fff"/></g>
+       <path d="M${r.x + 24},${r.y + 82} v14 M${r.x + 50},${r.y + 82} v14 M${r.x + 76},${r.y + 82} v14" stroke="#c9a0ff" stroke-width="3"/>`
+    : bath
     ? `<rect x="${r.x + 18}" y="${r.y + 26}" width="76" height="86" rx="10" fill="#fff" stroke="#8fd3ff" stroke-width="5"/><rect x="${r.x + 26}" y="${r.y + 34}" width="60" height="70" rx="6" fill="#eaf6ff"/><path d="M${r.x + 34},${r.y + 48} L${r.x + 52},${r.y + 40}" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
        <rect x="${r.x + 22}" y="${fy - 54}" width="68" height="20" rx="8" fill="#fff"/><rect x="${r.x + 30}" y="${fy - 36}" width="52" height="36" rx="6" fill="#bfe3ff"/>
        <g transform="translate(${r.x + 128} ${fy})"><rect x="-4" y="-76" width="8" height="76" rx="3" fill="#c9a0ff"/><rect x="-28" y="-72" width="56" height="12" rx="6" fill="#fff"/><g transform="translate(-14 -72) rotate(-14)"><rect x="-3" y="-34" width="6" height="34" rx="3" fill="#ff6b8b"/><rect x="-5" y="-42" width="10" height="12" rx="3" fill="#fff"/></g><g transform="translate(14 -72) rotate(12)"><rect x="-3" y="-34" width="6" height="34" rx="3" fill="#5cc8ff"/><rect x="-5" y="-42" width="10" height="12" rx="3" fill="#fff"/></g></g>
@@ -413,7 +458,7 @@ function salonRoom(r) {
        <g transform="translate(${r.x + 148} ${fy - 40})"><rect x="-9" y="-16" width="18" height="16" rx="4" fill="#fff6a8" stroke="#ffd96a" stroke-width="2"/><path d="M-5,-16 V-34 M0,-16 V-38 M5,-16 V-33" stroke="#ff9a5c" stroke-width="3.4" stroke-linecap="round"/></g>
        <ellipse cx="${r.x + 110}" cy="${fy - 40}" rx="17" ry="7" fill="#ffd1e8" stroke="#fff" stroke-width="2"/><circle cx="${r.x + 110}" cy="${fy - 43}" r="6" fill="#ff8fc7"/>`;
   return `<g class="salon" data-salon="${r.i}" style="cursor:pointer">
-    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${bath ? '#cdeeff' : hair ? '#ffd0e6' : '#e0d2ff'}"/>
+    <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${kitchen ? '#fff0c8' : bath ? '#cdeeff' : hair ? '#ffd0e6' : '#e0d2ff'}"/>
     <rect x="${r.x}" y="${fy}" width="${r.w}" height="22" fill="#ffffff" opacity=".45"/>
     ${props}
     <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#fff" stroke-width="6"/>

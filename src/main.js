@@ -1,8 +1,9 @@
 import { PRINCESSES, UNICORNS, RAINBOW } from './cast.js';
-import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, SALONS, GROUND, roomBounds, STYLE_COUNT, TOTAL_STYLES } from './art.js';
+import { sceneSVG, princessSVG, unicornSVG, riderSVG, ROOMS, SALONS, GROUND, roomBounds, bedSpot as artBedSpot, STYLE_COUNT, TOTAL_STYLES } from './art.js';
 import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from './lakeart.js';
 import { openWardrobe } from './wardrobe.js';
 import { openTeeth } from './teeth.js';
+import { openKitchen } from './kitchen.js';
 import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
 import { STALL_X, STALL_Y } from './stableart.js';
 import { initSky, updateSky, isNight } from './sky.js';
@@ -32,6 +33,11 @@ const picker = document.getElementById('picker');
 const KEY = 'elsas-castle-v1';
 let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, ulooks: {}, brushed: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
+// the lower-left bedroom became the kitchen: the two rooms next to it moved one place down the list
+if (saved.layout !== 2) {
+  Object.keys(saved.homes || {}).forEach((id) => { const h = saved.homes[id]; saved.homes[id] = h === 6 ? null : (h === 7 || h === 8) ? h - 1 : h; });
+  saved.layout = 2;
+}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* ignore */ } }
 
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -96,7 +102,7 @@ function make(def, kind, index) {
     home: null, moving: false, dragging: false, hopT: -1, phase: rand(0, 6),
     rider: null, mount: null, hidden: false, sleeping: false, lie: 0, lieRot: 0, lieShown: false, zzzT: 0, munch: 0, joy: 0, groom: 0, water: false, foam: 0, foamN: 0, dirt: !!saved.dirt[def.id], dirtShown: null, shine: 0, shineT: 0, cast: null,
   };
-  c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) && saved.homes[def.id] < ROOMS.length ? saved.homes[def.id] : null; // (the old tenth room is the bathroom now)
+  c.home = kind === 'princess' && Number.isInteger(saved.homes[def.id]) && saved.homes[def.id] < ROOMS.length ? saved.homes[def.id] : null; // (rooms that no longer exist send her outside)
   const b = boundsOf(c);
   c.x = c.tx = rand(b.x0, b.x1);
   c.y = c.ty = rand(b.y0, b.y1);
@@ -105,13 +111,10 @@ function make(def, kind, index) {
   return c;
 }
 
-// where a princess lies down in her room's bed (head on the pillow)
-function bedSpot(i) {
-  const r = ROOMS[i];
-  const bedLeft = r.i % 2 === 0;
-  const bx = bedLeft ? r.x + 12 : r.x + r.w - 112;
-  const fy = r.y + r.h - 22;
-  return bedLeft ? { x: bx + 96, y: fy - 20, rot: -90 } : { x: bx + 6, y: fy - 20, rot: 90 };
+// where a princess lies down in her room's bunk bed: the first sleeper gets the lower bunk, the second the upper
+function bedSpot(c) {
+  const mates = chars.filter((k) => k.kind === 'princess' && k.home === c.home);
+  return artBedSpot(ROOMS[c.home], mates.indexOf(c) % 2);
 }
 
 function boundsOf(c) {
@@ -413,6 +416,14 @@ const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getM
 function openSalon(section, who) {
   const princesses = chars.filter((k) => k.kind === 'princess');
   const start = Math.max(0, princesses.findIndex((k) => who ? k === who : k.def.id === 'elsa'));
+  if (section === 'kitchen') {
+    openKitchen({
+      cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
+      index: start,
+      onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
+    });
+    return;
+  }
   if (section === 'bath') {
     openTeeth({
       cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
@@ -813,7 +824,7 @@ function frame(now) {
       c.sleepG.style.display = sleepNow ? '' : 'none';
       c.zzzT = rand(0.2, 1.5);
       if (sleepNow && c.kind === 'unicorn') { c.tx = rand(SLEEP.x0, SLEEP.x1); c.ty = rand(SLEEP.y0, SLEEP.y1); c.speed = c.walk; }
-      if (sleepNow && c.kind === 'princess' && c.home !== null) { const b = bedSpot(c.home); c.tx = b.x; c.ty = b.y; c.speed = c.walk * 1.5; }
+      if (sleepNow && c.kind === 'princess' && c.home !== null) { const b = bedSpot(c); c.tx = b.x; c.ty = b.y; c.speed = c.walk * 1.5; }
     }
     if (c.sleeping) {
       c.zzzT -= dt;
@@ -824,7 +835,7 @@ function frame(now) {
     }
     // lie down once she has reached her bed, stand up again in the morning
     const bedNow = c.kind === 'princess' && c.sleeping && c.home !== null;
-    const spot = bedNow ? bedSpot(c.home) : null;
+    const spot = bedNow ? bedSpot(c) : null;
     const inBed = !!spot && Math.hypot(c.x - spot.x, c.y - spot.y) < 4;
     if (spot) c.lieRot = spot.rot;
     c.lie += ((inBed ? 1 : 0) - c.lie) * Math.min(1, dt * (inBed ? 4 : 9));

@@ -41,10 +41,9 @@ export function openTeeth({ cast, index = 0, brushedToday = () => false, onBrush
   function makeSpots() {
     spots = [];
     const g = q('#spots');
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 5; i++) { // just a few spots, and a quick scrub clears each one
       const upper = i % 2 === 0;
-      const k = Math.floor(i / 2) + (i > 6 ? 1 : 0);
-      const s = { x: 92 + ((k * 2 + (upper ? 0 : 1)) % 6) * 43 + rnd(-4, 4), y: upper ? rnd(84, 118) : rnd(184, 222), v: 1 };
+      const s = { x: 92 + [0, 3, 1, 4, 2][i] * 43 + rnd(-4, 4) + (upper ? 0 : 20), y: upper ? rnd(84, 118) : rnd(184, 222), v: 1 };
       s.el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       s.el.innerHTML = `<circle r="13" fill="#c98a3c"/><circle r="8" cx="-3" cy="-3" fill="#e0a95a"/><circle r="3" cx="5" cy="5" fill="#a56a24"/>`;
       s.el.setAttribute('transform', `translate(${s.x.toFixed(1)} ${s.y.toFixed(1)})`);
@@ -119,8 +118,8 @@ export function openTeeth({ cast, index = 0, brushedToday = () => false, onBrush
     let left = 0;
     spots.forEach((s) => {
       if (s.v <= 0) return;
-      if (Math.hypot(s.x - p.x, s.y - p.y) < 42) {
-        s.v -= d / 130;
+      if (Math.hypot(s.x - p.x, s.y - p.y) < 58) {
+        s.v -= d / 40;
         if (s.v <= 0) { s.el.remove(); star(s.x, s.y); audio.chime(3 + Math.floor(Math.random() * 6)); }
         else s.el.setAttribute('opacity', Math.max(0.15, s.v).toFixed(2));
       }

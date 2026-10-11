@@ -3,8 +3,9 @@
 A cosy, rainbow-coloured web game for a 3-year-old: princesses, unicorns and a big castle.
 
 **Milestones 1–5 (this version)**
-- Dollhouse castle with nine bedrooms, a hair salon, a makeup room and a bathroom. Drag a princess into a room and she moves in (saved on the device).
+- Dollhouse castle with eight bedrooms (all with bunk beds: two sleepers per room), a hair salon, a makeup room, a bathroom and a kitchen. The household is 9 princesses, Queen Sara and King Jonas. Drag a princess into a room and she moves in (saved on the device).
 - Tap a princess to open her wardrobe (6 dress, 6 shoe and 6 tiara styles in 8 colours each, plus treasure unlocks). Tap a unicorn to style her: coat pattern and colour, mane and tail colours, and an extra (saddle blanket, flower garland, tail bow, horn jewel or anklets). On the styling screen, hold the round arrow button for a moment to put that character's styling back to the start (unlocked clothes are kept).
+- Kitchen (bottom left): tap it, or drop a princess on it. Tap or drag any of 24 ingredients into the big bowl, tap the spoons to toss the salad and the fork to let her eat it.
 - Bathroom (bottom right of the castle): tap it, or drop a princess on it, then drag the toothbrush over the sugar spots on her teeth until they all sparkle away. Each princess only needs her teeth brushed once a day; coming back later the same day shows her sparkling teeth.
 - Tap the pond next to the castle to visit the lake: drag princesses and unicorns into the water, tap or scrub them with the sponge until they are covered in bubbles and come out sparkling clean with a rainbow. Rubber ducks quack when tapped, and the mud puddle gets them dirty again.
 - Tap the blue rainbow button (left side) to pick a trip. Whoever is needed joins automatically (Elsa always goes), and riders already on a unicorn come along first. Six different trips:

@@ -6,16 +6,18 @@ export const PRINCESSES = [
   // Elsa is drawn to look like the real Elsa: round face, wavy chestnut hair with lighter streaks, side-swept fringe,
   // a little tied-back tuft, big dark brown eyes and rosy cheeks. Her favourite coral T-shirt colour is her default dress.
   { id: 'elsa', name: 'Elsa', dress: '#f27c80', hair: '#8c5b3a', skin: '#f1c4a0', shoes: '#ff8fc7', tiara: '#ffd84d', hairStyle: 1, face: 'elsa' },
-  { id: 'p2', name: 'Violet', dress: '#a98bff', hair: '#5b3a29', skin: '#f1c27d', shoes: '#ff8fc7', tiara: '#ffe27a' },
+  { id: 'p2', name: 'Sara', dress: '#a98bff', hair: '#5b3a29', skin: '#f1c27d', shoes: '#ff8fc7', tiara: '#ffd84d', queen: true, dressStyle: 2, tiaraStyle: 6 },
   { id: 'p3', name: 'Marina', dress: '#5cc8ff', hair: '#2d2340', skin: '#8d5524', shoes: '#ffd23f', tiara: '#fff3b0' },
-  { id: 'p4', name: 'Fern', dress: '#6edc8c', hair: '#e8743b', skin: '#ffe0bd', shoes: '#ff9a5c', tiara: '#ffd84d' },
-  { id: 'p5', name: 'Sunny', dress: '#ffd23f', hair: '#a0522d', skin: '#c68642', shoes: '#5cc8ff', tiara: '#ffffff' },
-  { id: 'p6', name: 'Rosie', dress: '#ff9a5c', hair: '#ff6fa5', skin: '#e0ac69', shoes: '#a98bff', tiara: '#ffd84d' },
+  { id: 'p4', name: 'Molly', dress: '#6edc8c', hair: '#e8743b', skin: '#ffe0bd', shoes: '#ff9a5c', tiara: '#ffd84d' },
+  { id: 'p5', name: 'Anna', dress: '#ffd23f', hair: '#a0522d', skin: '#c68642', shoes: '#5cc8ff', tiara: '#ffffff' },
+  { id: 'p6', name: 'Amelia', dress: '#ff9a5c', hair: '#ff6fa5', skin: '#e0ac69', shoes: '#a98bff', tiara: '#ffd84d' },
   // four more friends, each with her own hairstyle from the hair salon
   { id: 'p7', name: 'Luna', dress: '#7a6bd8', hair: '#e8e4f0', skin: '#f6d5c0', shoes: '#ffd23f', tiara: '#ffffff', hairStyle: 5 },     // silver top bun
   { id: 'p8', name: 'Poppy', dress: '#ff4f6a', hair: '#f5c542', skin: '#ffe0bd', shoes: '#ffffff', tiara: '#ffd84d', hairStyle: 3 },    // blonde pigtails
   { id: 'p9', name: 'Coral', dress: '#2fc7b6', hair: '#2d2340', skin: '#e3b48a', shoes: '#ff8fc7', tiara: '#fff3b0', hairStyle: 4 },    // black ponytail
   { id: 'p10', name: 'Willow', dress: '#c8e45a', hair: '#6a3d1e', skin: '#d9a066', shoes: '#a98bff', tiara: '#ffe27a', hairStyle: 2 },  // brown bob
+  // the royal family: Sara is the Queen (pearl crown and gown), Jonas is the King (crown, cape and a beard)
+  { id: 'king', name: 'Jonas', dress: '#3b5bdb', hair: '#6a3d1e', skin: '#f1c4a0', shoes: '#7a4a2c', tiara: '#ffd84d', king: true },
 ];
 
 export const UNICORNS = [
