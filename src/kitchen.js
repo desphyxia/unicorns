@@ -86,7 +86,7 @@ const BOWL_ICON = '<svg viewBox="0 0 100 100"><path d="M10,50 Q14,86 50,88 Q86,8
 const NEWCONE = '<svg viewBox="0 0 100 100"><path d="M28,42 L72,42 L50,90Z" fill="#fff"/><path d="M30,44 Q26,20 50,20 Q74,20 70,44" fill="#fff" opacity=".9"/><path d="M82,24 a24,24 0 1 1 -8,-12 M84,6 V24 H66" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(-6 -2) scale(.9)"/></svg>';
 const YUM = '<svg viewBox="0 0 100 100"><path d="M14,40 Q50,96 86,40Z" fill="#fff"/><path d="M26,44 Q50,76 74,44Z" fill="#e8546e"/><path d="M50,22 C38,12 30,26 50,38 C70,26 62,12 50,22Z" fill="#fff"/></svg>';
 
-export function openKitchen({ cast, index = 0, onClose }) {
+export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
   const root = document.getElementById('kitchen');
   let idx = index;
   let pieces = []; // what is in the bowl
@@ -171,6 +171,7 @@ export function openKitchen({ cast, index = 0, onClose }) {
     const pv = q('.w-preview');
     sparkles(pv);
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');
+    onAte(cast[idx].def);
     const left = pieces.splice(0);
     left.forEach((el, k) => setTimeout(() => { el.style.transition = 'opacity .25s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 260); if (k % 3 === 0) audio.munch(); }, k * 55));
     setTimeout(() => audio.chime(9), left.length * 55);
@@ -229,6 +230,7 @@ export function openKitchen({ cast, index = 0, onClose }) {
   }
   function iceYum() {
     if (!ice.scoops.length) return;
+    onAte(cast[idx].def);
     const pv = q('.w-preview');
     sparkles(pv);
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');

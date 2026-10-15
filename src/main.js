@@ -31,7 +31,7 @@ const picker = document.getElementById('picker');
 
 // ---------- saved state ----------
 const KEY = 'elsas-castle-v1';
-let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, ulooks: {}, brushed: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
+let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, ulooks: {}, ate: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
 // the lower-left bedroom became the kitchen: the two rooms next to it moved one place down the list
 if (saved.layout !== 2) {
@@ -410,8 +410,6 @@ function openStyling(c) {
   });
 }
 
-const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
-
 // the hair salon, makeup room and bathroom: pick a princess, then style her hair or face, or brush her teeth
 function openSalon(section, who) {
   const princesses = chars.filter((k) => k.kind === 'princess');
@@ -420,6 +418,7 @@ function openSalon(section, who) {
     openKitchen({
       cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
       index: start,
+      onAte: (def) => { saved.ate[def.id] = true; save(); },
       onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
     });
     return;
@@ -428,9 +427,9 @@ function openSalon(section, who) {
     openTeeth({
       cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
       index: start,
-      // teeth only need brushing once a day
-      brushedToday: (def) => saved.brushed[def.id] === dayKey(),
-      onBrushed: (def) => { saved.brushed[def.id] = dayKey(); save(); },
+      // teeth only need brushing after she has eaten something in the kitchen
+      needsBrush: (def) => !!saved.ate[def.id],
+      onBrushed: (def) => { delete saved.ate[def.id]; save(); },
       onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
     });
     return;

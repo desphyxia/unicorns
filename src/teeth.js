@@ -18,7 +18,7 @@ const teethSVG = () => {
 
 const brushSVG = '<rect x="-7" y="10" width="14" height="124" rx="7" fill="#ff8fc7" stroke="#fff" stroke-width="3"/><rect x="-18" y="-16" width="36" height="30" rx="9" fill="#fff" stroke="#fff" stroke-width="3"/><path d="M-12,-12 V8 M-4,-12 V8 M4,-12 V8 M12,-12 V8" stroke="#5cc8ff" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="62" r="4" fill="#fff"/>';
 
-export function openTeeth({ cast, index = 0, brushedToday = () => false, onBrushed = () => {}, onClose }) {
+export function openTeeth({ cast, index = 0, needsBrush = () => true, onBrushed = () => {}, onClose }) {
   const root = document.getElementById('teeth');
   let idx = index;
   let spots = [];
@@ -34,7 +34,7 @@ export function openTeeth({ cast, index = 0, brushedToday = () => false, onBrush
       </div>
       <div class="t-side"><svg class="t-mouth" viewBox="0 0 400 300">${teethSVG()}<g id="brush" transform="translate(${REST.x} ${REST.y}) rotate(18)">${brushSVG}</g></svg></div>
       <button class="w-done" aria-label="Done">${CHECK}</button>`;
-    if (brushedToday(c.def)) { spots = []; root.classList.add('shiny'); } else makeSpots();
+    if (needsBrush(c.def)) makeSpots(); else { spots = []; root.classList.add('shiny'); } // nothing to brush until she has eaten
   }
 
   const q = (s) => root.querySelector(s);
