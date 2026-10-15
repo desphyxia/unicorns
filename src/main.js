@@ -34,6 +34,10 @@ const picker = document.getElementById('picker');
 const KEY = 'elsas-castle-v1';
 let saved = { homes: {}, looks: {}, dirt: {}, names: {}, birthdays: {}, partyDone: {}, ulooks: {}, ate: {}, coins: 0, unlocked: [], newItems: [], hinted: false, lakeHinted: false };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { /* private mode etc. */ }
+// stickers are set up first: awards can happen as soon as the castle loads (e.g. 10 coins already saved)
+const stickers = initStickers({ audio });
+const award = (id) => stickers.award(id);
+
 // the lower-left bedroom became the kitchen: the two rooms next to it moved one place down the list
 if (saved.layout !== 2) {
   Object.keys(saved.homes || {}).forEach((id) => { const h = saved.homes[id]; saved.homes[id] = h === 6 ? null : (h === 7 || h === 8) ? h - 1 : h; });
@@ -923,8 +927,6 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // ---------- extras: sky, party, photos, stable care ----------
-const stickers = initStickers({ audio });
-const award = (id) => stickers.award(id);
 const ctx = { award, svg, layer, tools, el, chars, audio, rand, clamp, toSvg, sparkle, hearts, confetti, puff, dismount, nameOf, boundsOf, getMode: () => mode, isBusy: () => busy };
 initSky(ctx);
 party.initParty(ctx);
