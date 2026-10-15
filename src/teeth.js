@@ -4,6 +4,8 @@ import { RAINBOW } from './cast.js';
 import * as audio from './audio.js';
 
 const CHECK = '<svg viewBox="0 0 100 100"><path d="M24,52 L43,71 L78,30" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// a little sugar bug marks the princesses who still need to brush their teeth
+const BUG = '<svg class="t-bug" viewBox="-14 -14 28 28"><circle r="12" fill="#c98a3c" stroke="#fff" stroke-width="2.4"/><circle r="7" cx="-3" cy="-3" fill="#e0a95a"/><circle r="2.6" cx="4" cy="4" fill="#a56a24"/></svg>';
 const REST = { x: 340, y: 262 };
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -29,7 +31,7 @@ export function openTeeth({ cast, index = 0, needsBrush = () => true, onBrushed 
     const look = { ...defaultLook(c.def), ...c.look };
     root.innerHTML = `
       <div class="w-stage"><div class="w-preview ${animate ? 'twirl' : ''}"><svg viewBox="-60 -135 120 145">${princessSVG(c.def, look)}</svg></div>
-        <div class="w-who">${cast.map((p, i) => `<button class="w-face ${i === idx ? 'sel' : ''}" data-who="${i}"><svg viewBox="-30 -128 60 56">${princessSVG(p.def, { ...defaultLook(p.def), ...p.look })}</svg></button>`).join('')}</div>
+        <div class="w-who">${cast.map((p, i) => `<button class="w-face ${i === idx ? 'sel' : ''} ${needsBrush(p.def) ? 'dirty' : ''}" data-who="${i}"><span class="w-clip"><svg viewBox="-30 -128 60 56">${princessSVG(p.def, { ...defaultLook(p.def), ...p.look })}</svg></span>${needsBrush(p.def) ? BUG : ''}</button>`).join('')}</div>
         ${c.name ? `<div class="w-name" style="color:#4fb0e8">${c.name}</div>` : ''}
       </div>
       <div class="t-side"><svg class="t-mouth" viewBox="0 0 400 300">${teethSVG()}<g id="brush" transform="translate(${REST.x} ${REST.y}) rotate(18)">${brushSVG}</g></svg></div>
@@ -85,6 +87,8 @@ export function openTeeth({ cast, index = 0, needsBrush = () => true, onBrushed 
   function allClean() {
     root.classList.add('shiny');
     onBrushed(cast[idx].def);
+    const chip = q(`.w-face[data-who="${idx}"]`);
+    if (chip) { chip.classList.remove('dirty'); const b = chip.querySelector('.t-bug'); if (b) b.remove(); }
     [0, 2, 4, 7].forEach((n, i) => setTimeout(() => audio.chime(n + 4), i * 140));
     const pv = q('.w-preview');
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');

@@ -430,9 +430,11 @@ function openSalon(section, who) {
     return;
   }
   if (section === 'bath') {
+    // opened from the bathroom itself: start with the first princess who needs to brush
+    const first = who ? start : Math.max(0, princesses.findIndex((k) => saved.ate[k.def.id]));
     openTeeth({
       cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
-      index: start,
+      index: first,
       // teeth only need brushing after she has eaten something in the kitchen
       needsBrush: (def) => !!saved.ate[def.id],
       onBrushed: (def) => { delete saved.ate[def.id]; save(); award('teeth'); },
