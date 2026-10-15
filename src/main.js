@@ -4,6 +4,7 @@ import { SHORE, MUD, SPONGE_REST, WATER, inWater, clampToWater, duckSVG } from '
 import { openWardrobe } from './wardrobe.js';
 import { openTeeth } from './teeth.js';
 import { openKitchen } from './kitchen.js';
+import { initStickers } from './stickers.js';
 import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
 import { STALL_X, STALL_Y } from './stableart.js';
 import { initSky, updateSky, isNight } from './sky.js';
@@ -344,7 +345,7 @@ function endDrag(e) {
     saved.homes[c.def.id] = c.home;
     saved.hinted = true;
     save();
-    if (room) { audio.moveIn(); sparkle(c.x, c.y - 60, 16); }
+    if (room) { award('home'); audio.moveIn(); sparkle(c.x, c.y - 60, 16); }
     else audio.chime(4);
   } else {
     audio.chime(6);
@@ -404,7 +405,7 @@ function openStyling(c) {
     cast: [{ def: c.def, look: store[c.def.id], name: isUnicorn ? null : nameOf(c.def) }],
     unlocked: isUnicorn ? {} : unlockedMap(),
     fresh: isUnicorn ? [] : saved.newItems.splice(0),
-    onChange: (def, look) => { store[def.id] = { ...(store[def.id] || {}), ...look }; save(); redraw(c, store[def.id]); },
+    onChange: (def, look) => { store[def.id] = { ...(store[def.id] || {}), ...look }; save(); redraw(c, store[def.id]); award(isUnicorn ? 'unicorn' : 'dress'); },
     onReset: (def, keys) => { clearLook(store, def.id, keys); save(); redraw(c, store[def.id]); },
     onClose: () => { idle = 0; c.hopT = 0; sparkle(c.x, c.y - 70, 14); },
   });
@@ -419,6 +420,7 @@ function openSalon(section, who) {
       cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
       index: start,
       onAte: (def) => { saved.ate[def.id] = true; save(); },
+      award,
       onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
     });
     return;
@@ -429,7 +431,7 @@ function openSalon(section, who) {
       index: start,
       // teeth only need brushing after she has eaten something in the kitchen
       needsBrush: (def) => !!saved.ate[def.id],
-      onBrushed: (def) => { delete saved.ate[def.id]; save(); },
+      onBrushed: (def) => { delete saved.ate[def.id]; save(); award('teeth'); },
       onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
     });
     return;
@@ -438,7 +440,7 @@ function openSalon(section, who) {
     section: section === 'hair' ? 'hair' : 'makeup',
     cast: princesses.map((k) => ({ def: k.def, look: saved.looks[k.def.id], name: nameOf(k.def) })),
     index: start,
-    onChange: (def, look) => { saved.looks[def.id] = { ...(saved.looks[def.id] || {}), ...look }; save(); redraw(charById(def.id), saved.looks[def.id]); },
+    onChange: (def, look) => { saved.looks[def.id] = { ...(saved.looks[def.id] || {}), ...look }; save(); redraw(charById(def.id), saved.looks[def.id]); award(section === 'hair' ? 'hair' : 'makeup'); },
     onReset: (def, keys) => { clearLook(saved.looks, def.id, keys); save(); redraw(charById(def.id), saved.looks[def.id]); },
     onClose: (def) => { idle = 0; const c = charById(def.id); if (c) { c.hopT = 0; sparkle(c.x, c.y - 70, 14); } },
   });
@@ -452,6 +454,7 @@ svg.querySelectorAll('.salon').forEach((g) => g.addEventListener('pointerdown', 
 
 // ---------- riding ----------
 function mount(p, u) {
+  award('ride');
   p.mount = u;
   u.rider = p;
   stash.appendChild(p.el);
@@ -499,6 +502,7 @@ const coinsEl = document.getElementById('coins');
 const coinN = document.getElementById('coinN');
 function showCoins(bump) {
   coinN.textContent = saved.coins;
+  if (saved.coins >= 10) award('coins');
   if (bump) { coinsEl.classList.remove('bump'); void coinsEl.offsetWidth; coinsEl.classList.add('bump'); }
 }
 showCoins(false);
@@ -536,7 +540,9 @@ function buildPairs(n) {
   return pairs.slice(0, n);
 }
 
+let tripDest = null;
 function beginTrip(dest) {
+  tripDest = dest;
   party.stop(true);
   tripPairs = buildPairs(groupSize(dest));
   mode = 'trip';
@@ -561,6 +567,7 @@ function endTripScene() {
   pairs.forEach(({ u }) => dismount(u));
   if (r.coins) saved.coins += r.coins;
   if (r.finished) {
+    award(`trip-${tripDest}`);
     if (r.muddy) pairs.forEach(({ u, p }) => [u, p].forEach((c) => { c.dirt = true; saved.dirt[c.def.id] = 1; }));
     if (r.unlock) {
       const key = `${r.unlock.cat}:${r.unlock.idx}`;
@@ -589,7 +596,7 @@ function dropInLake(c) {
     c.water = true;
     c.speed = c.walk;
     saved.lakeHinted = true;
-    if (!wasWater) { audio.splash(); splashFx(c.x, c.y - 22, 16); bubbles(c.x, c.y - 60, 6); }
+    if (!wasWater) { award('splash'); audio.splash(); splashFx(c.x, c.y - 22, 16); bubbles(c.x, c.y - 60, 6); }
     return;
   }
   if (wasWater) { c.foam = 0; audio.bubble(); bubbles(c.x, c.y - 60, 8); }
@@ -808,6 +815,7 @@ function frame(now) {
   party.update(dt, t);
   stableTools.update(dt);
   const partyHidden = mode !== 'castle';
+  if (party.isActive()) award('party');
   if (partyBtn.hidden !== partyHidden) { partyBtn.hidden = partyHidden; tripBtn.hidden = partyHidden; coinsEl.hidden = partyHidden; }
 
   for (const c of chars) {
@@ -846,6 +854,7 @@ function frame(now) {
       if (showBlanket) c.blanketG.firstChild.setAttribute('fill', RAINBOW[c.home % 6]);
     }
     if (c.munch > 0) c.munch -= dt;
+    if (c.lie > 0.9) award('sleep');
     if (!c.dragging && !c.water) {
       const dx = c.tx - c.x, dy = c.ty - c.y, dist = Math.hypot(dx, dy);
       if (dist > 2) {
@@ -914,11 +923,13 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // ---------- extras: sky, party, photos, stable care ----------
-const ctx = { svg, layer, tools, el, chars, audio, rand, clamp, toSvg, sparkle, hearts, confetti, puff, dismount, nameOf, boundsOf, getMode: () => mode, isBusy: () => busy };
+const stickers = initStickers({ audio });
+const award = (id) => stickers.award(id);
+const ctx = { award, svg, layer, tools, el, chars, audio, rand, clamp, toSvg, sparkle, hearts, confetti, puff, dismount, nameOf, boundsOf, getMode: () => mode, isBusy: () => busy };
 initSky(ctx);
 party.initParty(ctx);
 const stableTools = initStable(ctx);
-const photosApi = initPhotos({ audio, getSource: () => (mode === 'trip' ? document.getElementById('trip') : svg) });
+const photosApi = initPhotos({ audio, onTaken: () => award('photo'), getSource: () => (mode === 'trip' ? document.getElementById('trip') : svg) });
 
 const partyBtn = document.getElementById('partyBtn');
 const tripBtn = document.getElementById('tripBtn');

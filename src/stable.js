@@ -2,7 +2,7 @@
 import { BASKETS, BRUSH_REST, foodSVG, brushSVG } from './stableart.js';
 
 export function initStable(ctx) {
-  const { el, tools, svg, chars, audio, toSvg, sparkle, hearts, getMode, isBusy } = ctx;
+  const { el, tools, svg, chars, audio, toSvg, sparkle, hearts, getMode, isBusy, award } = ctx;
   const scene = svg.querySelector('#stableScene');
   const active = new Map(); // pointerId -> { tool, ... }
   const brush = { x: BRUSH_REST.x, y: BRUSH_REST.y, dragging: false, wob: 0, lastSound: 0 };
@@ -62,7 +62,7 @@ export function initStable(ctx) {
         if (Math.random() < Math.min(0.5, moved / 50)) sparkle(p.x, p.y, 1);
         const now = performance.now();
         if (now - brush.lastSound > 140) { audio.bubble(); brush.lastSound = now; }
-        if (c.groom >= 1) { c.groom = 0; happy(c); }
+        if (c.groom >= 1) { c.groom = 0; happy(c); award('brush'); }
       }
     }
   });
@@ -76,6 +76,7 @@ export function initStable(ctx) {
     a.el.remove();
     if (!c) { sparkle(a.x, a.y, 4); audio.pop(); return; }
     c.munch = 1.2;
+    award('feed');
     c.hopT = 0;
     c.joy = (c.joy || 0) + 0.5;
     hearts(c.x + 40, c.y - 120, 4);

@@ -3,6 +3,7 @@
 import { princessSVG, defaultLook } from './art.js';
 import { RAINBOW } from './cast.js';
 import * as audio from './audio.js';
+import { cupcakeSVG, newCupcake, LINERS, SPONGES, FROSTS, STYLES, CAKE_TOPS, linerIcon, spongeIcon, frostIcon, cakeTopIcon, miniCupcake } from './cakeart.js';
 
 const CHECK = '<svg viewBox="0 0 100 100"><path d="M24,52 L43,71 L78,30" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -83,16 +84,22 @@ const toppingIcon = (t) => `<svg viewBox="-24 -24 48 48"><g transform="scale(1.3
 const sprinkleIcon = (sp) => `<svg viewBox="-20 -20 40 40"><g transform="scale(1.3)">${sp.art}</g></svg>`;
 const CONE_ICON = '<svg viewBox="0 0 100 100"><path d="M30,48 L70,48 L50,92Z" fill="#f0c27a" stroke="#d9a050" stroke-width="3" stroke-linejoin="round"/><path d="M36,58 L58,58 M41,69 L55,69" stroke="#d9a050" stroke-width="2.5"/><path d="M26,50 Q22,24 50,24 Q78,24 74,50 Q66,60 60,52 Q50,62 42,52 Q34,60 26,50Z" fill="#ff9fb8" stroke="#ff7fa0" stroke-width="3"/><circle cx="50" cy="16" r="7" fill="#e8283c"/></svg>';
 const BOWL_ICON = '<svg viewBox="0 0 100 100"><path d="M10,50 Q14,86 50,88 Q86,86 90,50Z" fill="#fff" stroke="#ffd1e8" stroke-width="4"/><circle cx="34" cy="44" r="10" fill="#6edc8c"/><circle cx="52" cy="38" r="11" fill="#ff6b8b"/><circle cx="68" cy="46" r="9" fill="#ffd23f"/><circle cx="46" cy="50" r="8" fill="#a98bff"/><path d="M8,50 H92" stroke="#ffd1e8" stroke-width="5" stroke-linecap="round"/></svg>';
+const CUPCAKE_ICON = '<svg viewBox="0 0 100 100"><path d="M26,52 L74,52 L68,90 Q50,95 32,90Z" fill="#ff8fc7" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M34,52 L36,90 M44,52 L45,92 M56,52 L55,92 M66,52 L64,90" stroke="#fff" stroke-width="2.4" opacity=".7"/><path d="M22,54 Q18,34 50,30 Q82,34 78,54Z" fill="#ffd23f"/><ellipse cx="50" cy="36" rx="26" ry="9" fill="#fff"/><ellipse cx="50" cy="26" rx="17" ry="8" fill="#fff"/><circle cx="50" cy="14" r="7" fill="#e8283c"/></svg>';
+const TRAY_ICON = '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="72" rx="40" ry="12" fill="#fff"/><path d="M34,66 L66,66 L62,50 L38,50Z" fill="#fff"/><path d="M36,50 Q36,34 50,34 Q64,34 64,50Z" fill="#fff"/><path d="M50,8 V28 M42,20 L50,28 L58,20" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const NEWCONE = '<svg viewBox="0 0 100 100"><path d="M28,42 L72,42 L50,90Z" fill="#fff"/><path d="M30,44 Q26,20 50,20 Q74,20 70,44" fill="#fff" opacity=".9"/><path d="M82,24 a24,24 0 1 1 -8,-12 M84,6 V24 H66" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(-6 -2) scale(.9)"/></svg>';
 const YUM = '<svg viewBox="0 0 100 100"><path d="M14,40 Q50,96 86,40Z" fill="#fff"/><path d="M26,44 Q50,76 74,44Z" fill="#e8546e"/><path d="M50,22 C38,12 30,26 50,38 C70,26 62,12 50,22Z" fill="#fff"/></svg>';
 
-export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
+export function openKitchen({ cast, index = 0, onAte = () => {}, award = () => {}, onClose }) {
   const root = document.getElementById('kitchen');
   let idx = index;
   let pieces = []; // what is in the bowl
   let drag = null;
   let mode = 'salad';
   let ice = { scoops: [], tops: [], spr: [], fresh: null };
+  let cup = newCupcake();
+  let cupFresh = null;
+  let step = 0;
+  let tray = [];
 
   const bowlHTML = () => `<svg class="k-bowl" viewBox="0 0 400 220">
     <ellipse cx="200" cy="96" rx="168" ry="34" fill="#fff" stroke="#ffd1e8" stroke-width="6"/><ellipse cx="200" cy="98" rx="152" ry="28" fill="#f6e8ff"/>
@@ -110,12 +117,13 @@ export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
         ${c.name ? `<div class="w-name" style="color:#ff9a2e">${c.name}</div>` : ''}
       </div>
       <div class="k-side">
-        <div class="k-modes"><button class="k-mode ${mode === 'salad' ? 'sel' : ''}" data-mode="salad" aria-label="Salad">${BOWL_ICON}</button><button class="k-mode ${mode === 'ice' ? 'sel' : ''}" data-mode="ice" aria-label="Ice cream">${CONE_ICON}</button></div>
-        ${mode === 'salad' ? saladHTML() : iceHTML()}
+        <div class="k-modes"><button class="k-mode ${mode === 'salad' ? 'sel' : ''}" data-mode="salad" aria-label="Salad">${BOWL_ICON}</button><button class="k-mode ${mode === 'ice' ? 'sel' : ''}" data-mode="ice" aria-label="Ice cream">${CONE_ICON}</button><button class="k-mode ${mode === 'cake' ? 'sel' : ''}" data-mode="cake" aria-label="Cupcakes">${CUPCAKE_ICON}</button></div>
+        ${mode === 'salad' ? saladHTML() : mode === 'ice' ? iceHTML() : cakeHTML()}
       </div>
       <button class="w-done" aria-label="Done">${CHECK}</button>`;
     pieces = [];
     if (mode === 'ice') drawCone();
+    if (mode === 'cake') drawCup();
   }
 
   const saladHTML = () => `<div class="k-tray">${INGREDIENTS.map((g, i) => `<button class="k-ing" data-ing="${i}" aria-label="${g.id}">${ingSVG(g)}</button>`).join('')}</div>
@@ -172,11 +180,80 @@ export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
     sparkles(pv);
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');
     onAte(cast[idx].def);
+    award('salad'); if (pieces.length >= 12) award('bigsalad');
     const left = pieces.splice(0);
     left.forEach((el, k) => setTimeout(() => { el.style.transition = 'opacity .25s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 260); if (k % 3 === 0) audio.munch(); }, k * 55));
     setTimeout(() => audio.chime(9), left.length * 55);
   }
 
+
+
+  const cakeGrid = () => {
+    if (step === 0) return `<div class="i-grp fl">${LINERS.map((c, i) => `<button class="i-btn ${cup.liner === i ? 'on' : ''}" data-cl="${i}" aria-label="cup">${linerIcon(c)}</button>`).join('')}</div>
+      <div class="i-grp tp">${SPONGES.map((c, i) => `<button class="i-btn ${cup.sponge === i ? 'on' : ''}" data-cs="${i}" aria-label="sponge">${spongeIcon(c)}</button>`).join('')}</div>`;
+    if (step === 1) return `<div class="i-grp sp" style="grid-template-columns:repeat(3,minmax(0,1fr))">${Array.from({ length: STYLES }, (_, i) => `<button class="i-btn ${cup.style === i ? 'on' : ''}" data-cy="${i}" aria-label="frosting">${frostIcon(cup.frost, i)}</button>`).join('')}</div>
+      <div class="i-grp fl">${FROSTS.map((c, i) => `<button class="i-btn ${cup.frost === c ? 'on' : ''}" data-cf="${i}" aria-label="colour">${frostIcon(c, cup.style)}</button>`).join('')}</div>`;
+    return `<div class="i-grp tp">${CAKE_TOPS.map((t, i) => `<button class="i-btn" data-ct="${i}" aria-label="${t.id}">${cakeTopIcon(t)}</button>`).join('')}</div>
+      <div class="i-grp sp">${SPRINKLES.map((t, i) => `<button class="i-btn" data-cp="${i}" aria-label="${t.id}">${sprinkleIcon(t)}</button>`).join('')}</div>`;
+  };
+  const cakeHTML = () => `<div class="i-wrap"><div class="c-left"><svg class="i-cone c-cup" viewBox="30 14 200 280"><g id="cup"></g></svg><div class="c-tray">${Array.from({ length: 6 }, (_, i) => `<button class="c-slot" data-slot="${i}" aria-label="cupcake">${tray[i] ? tray[i] : ''}</button>`).join('')}</div></div>
+    <div class="i-pick"><div class="c-steps">${[0, 1, 2].map((i) => `<button class="c-step ${step === i ? 'sel' : ''}" data-step="${i}" aria-label="step">${[linerIcon('#ff8fc7'), frostIcon('#ff9fb8', 0), cakeTopIcon(CAKE_TOPS[0])][i]}</button>`).join('')}</div>
+      ${cakeGrid()}
+      <div class="i-tools"><button class="k-tool" data-tool="newcup" aria-label="New cupcake">${NEWCONE}</button><button class="k-tool" data-tool="tray" aria-label="Put on the tray">${TRAY_ICON}</button><button class="k-tool serve" data-tool="eatcup" aria-label="Eat the cupcake">${YUM}</button></div></div></div>`;
+  function drawCup() {
+    const g = q('#cup');
+    if (g) { g.innerHTML = cupcakeSVG(cup, cupFresh); cupFresh = null; }
+  }
+  function cakeBump() { const c = q('.c-cup'); if (c) { c.classList.remove('bump'); void c.getBoundingClientRect(); c.classList.add('bump'); } }
+  function cakeAdd(kind, i) {
+    if (kind === 'cl') { cup.liner = i; audio.pop(); }
+    else if (kind === 'cs') { cup.sponge = i; audio.pop(); }
+    else if (kind === 'cy') { cup.style = i; cup.tops.forEach((t) => { t.dy = 0; }); audio.pop(); }
+    else if (kind === 'cf') { cup.frost = FROSTS[i]; audio.pop(); }
+    else if (kind === 'ct') {
+      if (cup.tops.length >= 6) cup.tops.shift();
+      const slot = [0, -26, 26, -13, 13, 0][cup.tops.length % 6];
+      cup.tops.push({ t: i, dx: slot, dy: rnd(-3, 3), r: CAKE_TOPS[i].id === 'candle' ? 0 : rnd(-14, 14) });
+      cupFresh = `t${cup.tops.length - 1}`;
+      audio.pop(); audio.chime(4 + i % 8);
+    } else if (kind === 'cp') {
+      const sp = SPRINKLES[i];
+      for (let k = 0; k < 8; k++) {
+        const a = rnd(Math.PI * 1.1, Math.PI * 1.9), r = rnd(6, 46);
+        if (cup.spr.length >= 70) cup.spr.shift();
+        cup.spr.push({ svg: sprinkleBit(sp, 130 + Math.cos(a) * r, 110 + Math.sin(a) * r * 0.6 + 14, sp.cols[Math.floor(rnd(0, sp.cols.length))], Math.floor(rnd(0, 180))) });
+      }
+      audio.bubble(); audio.chime(7 + i);
+    }
+    if (kind === 'cy' || kind === 'cf' || kind === 'cl' || kind === 'cs') render(false); else drawCup();
+  }
+  function cakeMade() { award('cupcake'); if (cup.tops.some((t) => CAKE_TOPS[t.t].id === 'candle')) award('candle'); }
+  function putOnTray() {
+    if (tray.length >= 6) { cakeBump(); audio.pop(); return; }
+    tray.push(miniCupcake(cup));
+    cakeMade();
+    if (tray.length === 6) award('tray');
+    audio.chime(8); audio.pop();
+    cup = newCupcake(); step = 0; render(false);
+  }
+  function eatCup() {
+    onAte(cast[idx].def);
+    cakeMade();
+    const pv = q('.w-preview');
+    sparkles(pv);
+    pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');
+    const g = q('#cup'); g.style.transition = 'opacity .7s'; g.style.opacity = '0';
+    [0, 1, 2].forEach((k) => setTimeout(() => audio.munch(), k * 240));
+    setTimeout(() => { cup = newCupcake(); step = 0; render(false); audio.chime(9); }, 800);
+  }
+  function eatSlot(i) {
+    if (!tray[i]) return;
+    onAte(cast[idx].def);
+    tray.splice(i, 1);
+    audio.munch(); audio.chime(6);
+    sparkles(q('.w-preview'), 6);
+    render(false);
+  }
 
   // draw the whole cone from what has been chosen so far
   function drawCone() {
@@ -231,6 +308,7 @@ export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
   function iceYum() {
     if (!ice.scoops.length) return;
     onAte(cast[idx].def);
+    award('ice'); if (ice.scoops.length === 3) award('ice3'); if (ice.tops.length >= 2 && ice.spr.length) award('fancyice');
     const pv = q('.w-preview');
     sparkles(pv);
     pv.classList.remove('twirl'); void pv.offsetWidth; pv.classList.add('twirl');
@@ -247,6 +325,12 @@ export function openKitchen({ cast, index = 0, onAte = () => {}, onClose }) {
     if (t.dataset.who !== undefined) { idx = +t.dataset.who; audio.chime(5 + idx); ice = { scoops: [], tops: [], spr: [], fresh: null }; render(true); return; }
     if (t.classList.contains('w-done')) { audio.moveIn(); root.hidden = true; root.innerHTML = ''; onClose(cast[idx].def); return; }
     if (t.dataset.mode) { mode = t.dataset.mode; audio.chime(mode === 'ice' ? 8 : 6); render(false); return; }
+    for (const k of ['cl', 'cs', 'cy', 'cf', 'ct', 'cp']) if (t.dataset[k] !== undefined) { cakeAdd(k, +t.dataset[k]); return; }
+    if (t.dataset.step !== undefined) { step = +t.dataset.step; audio.pop(); render(false); return; }
+    if (t.dataset.slot !== undefined) { eatSlot(+t.dataset.slot); return; }
+    if (t.dataset.tool === 'newcup') { cup = newCupcake(); step = 0; audio.pop(); render(false); return; }
+    if (t.dataset.tool === 'tray') { putOnTray(); return; }
+    if (t.dataset.tool === 'eatcup') { eatCup(); return; }
     if (t.dataset.fl !== undefined) { iceAdd('fl', +t.dataset.fl); return; }
     if (t.dataset.tp !== undefined) { iceAdd('tp', +t.dataset.tp); return; }
     if (t.dataset.sp !== undefined) { iceAdd('sp', +t.dataset.sp); return; }

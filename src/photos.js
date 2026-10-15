@@ -40,7 +40,7 @@ function snapshot(source) {
   });
 }
 
-export function initPhotos({ audio, getSource }) {
+export function initPhotos({ audio, getSource, onTaken = () => {} }) {
   const camBtn = document.getElementById('camBtn');
   const albumBtn = document.getElementById('albumBtn');
   const album = document.getElementById('album');
@@ -58,6 +58,7 @@ export function initPhotos({ audio, getSource }) {
       photos.push(url);
       if (photos.length > MAX) photos.shift();
       persist();
+      onTaken();
       fly(url);
     }
     setTimeout(() => { taking = false; }, 500);

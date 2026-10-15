@@ -324,3 +324,38 @@ html, body {
 .rot-tab { transform-origin: 100px 80px; animation: rottab 2.4s ease-in-out infinite; }
 @keyframes rottab { 0%, 25% { transform: rotate(0); } 60%, 100% { transform: rotate(90deg); } }
 @media (orientation: portrait) { #rotate { display: flex; } }
+/* bakery */
+.c-left { display: flex; flex-direction: column; align-items: center; gap: 1vh; flex: none; }
+.c-cup { height: 44vh; }
+.c-tray { display: grid; grid-template-columns: repeat(6, 5.6vh); gap: .5vh; padding: .6vh; border-radius: 1.6vh; background: rgba(255, 255, 255, .6); }
+.c-slot { width: 5.6vh; height: 7.6vh; padding: 0; border: 0; background: transparent; }
+.c-slot svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.c-steps { display: flex; justify-content: center; gap: 1.6vh; }
+.c-step { width: 7vh; height: 7vh; border-radius: 50%; border: .5vh solid #fff; background: rgba(255, 255, 255, .7); padding: 1vh; box-shadow: 0 .4vh .8vh rgba(120, 90, 40, .2); }
+.c-step.sel { background: #ffd23f; transform: scale(1.12); }
+.c-step svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.i-btn.on { border-color: #ff6b8b; transform: scale(1.06); }
+
+/* sticker book */
+#stickerBtn { background: #ff9a5c !important; position: relative; }
+#stickerBtn .newdot { display: none; }
+#stickerBtn.new .newdot { display: block; animation: pulse2 1s ease-in-out infinite; transform-origin: 96px 16px; }
+#stickerBtn.pulse { animation: pulse2 .6s ease-out; }
+#stickers { position: fixed; inset: 0; z-index: 8; overflow: auto; background: linear-gradient(160deg, #fff0c8, #ffd9ec 40%, #d8ecff 75%, #e6d8ff); touch-action: pan-y; }
+#stickers[hidden] { display: none; }
+.sb-count { position: absolute; top: 3vh; right: 4vw; display: flex; align-items: center; gap: 1vh; padding: .8vh 2.4vh; border-radius: 6vh; background: rgba(255, 255, 255, .85); font-weight: 800; font-size: 5vh; color: #e08a00; }
+.sb-count svg { width: 6vh; height: 6vh; }
+.sb-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2vh; padding: 17vh 3vw 4vh 19vh; align-items: center; }
+.sb-slot { aspect-ratio: 1; padding: 0; border: 0; background: transparent; position: relative; }
+.sb-slot svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.sb-slot.got { transform: rotate(var(--r)); filter: drop-shadow(0 .8vh 1vh rgba(120, 60, 160, .25)); }
+.sb-slot.fresh { animation: sbnew .8s ease-out; }
+.sb-slot.boing { animation: sbboing .5s ease-out; }
+@keyframes sbnew { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.25) rotate(var(--r)); } 100% { transform: rotate(var(--r)); } }
+@keyframes sbboing { 0% { transform: rotate(var(--r)) scale(1); } 35% { transform: rotate(calc(var(--r) + 14deg)) scale(1.3); } 100% { transform: rotate(var(--r)) scale(1); } }
+#stickerPop { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+#stickerPop[hidden] { display: none; }
+.sp-card { width: 46vh; height: 46vh; filter: drop-shadow(0 2vh 3vh rgba(0, 0, 0, .35)); }
+.sp-card svg { width: 100%; height: 100%; }
+#stickerPop.go .sp-card { animation: sppop 2.1s ease-in-out forwards; }
+@keyframes sppop { 0% { transform: scale(0) rotate(-60deg); opacity: 0; } 18% { transform: scale(1.2) rotate(8deg); opacity: 1; } 28% { transform: scale(1) rotate(-4deg); } 80% { transform: scale(1) rotate(0); opacity: 1; } 100% { transform: scale(.2) translate(-130vh, -10vh); opacity: 0; } }
