@@ -18,6 +18,8 @@ export const PRINCESSES = [
   { id: 'p10', name: 'Willow', dress: '#c8e45a', hair: '#6a3d1e', skin: '#d9a066', shoes: '#a98bff', tiara: '#ffe27a', hairStyle: 2 },  // brown bob
   // the royal family: Sara is the Queen (pearl crown and gown), Jonas is the King (crown, cape and a beard)
   { id: 'king', name: 'Jonas', dress: '#3b5bdb', hair: '#6a3d1e', skin: '#f1c4a0', shoes: '#7a4a2c', tiara: '#ffd84d', king: true },
+  // Elsa's little sister: round face, blue eyes, short wispy strawberry-blonde hair with a little flower clip (rename her in the parent corner)
+  { id: 'sis', name: 'Baby', dress: '#f6c9dc', hair: '#e6b57c', skin: '#f9d9c6', shoes: '#ffffff', tiara: '#ffe27a', baby: true, hairAcc: 2, hairAccColor: '#f3c08a' },
 ];
 
 export const UNICORNS = [

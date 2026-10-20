@@ -98,7 +98,9 @@ export function openWardrobe({ section = 'clothes', cast, index = 0, unlocked = 
       tag.className = 'w-name';
       tag.textContent = cur().name;
       const c = L.dressColor || L.extraColor || '#a98bff';
-      tag.style.color = c === '#ffffff' ? '#a98bff' : c;
+      const n = parseInt(c.slice(1), 16);
+      const lum = (((n >> 16) & 255) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) / 255;
+      tag.style.color = lum > 0.72 ? '#e0709f' : c; // pale dresses would make the name hard to read
       root.querySelector('.w-stage').appendChild(tag);
     }
     if (animate) sparkles(root.querySelector('.w-preview'));

@@ -132,7 +132,7 @@ export function tiaraSVG(style, c) {
 export function defaultLook(p) {
   return {
     dress: p.dressStyle || 0, dressColor: p.dress, shoes: 0, shoesColor: p.shoes, tiara: p.tiaraStyle || 0, tiaraColor: p.tiara,
-    hairStyle: p.hairStyle || 0, hairColor: p.hair, hairAcc: 0, hairAccColor: '#ff8fc7',
+    hairStyle: p.hairStyle || 0, hairColor: p.hair, hairAcc: p.hairAcc || 0, hairAccColor: p.hairAccColor || '#ff8fc7',
     lips: 0, lipsColor: '#ff6b8b', eyes: 0, eyesColor: '#a98bff', cheeks: 0, cheeksColor: '#ff8f9f',
   };
 }
@@ -145,9 +145,11 @@ const blend = (a, b, k) => {
 };
 const highlight = (c) => blend(c, '#fff0d8', 0.4);
 
-function hairBack(style, c, king) {
+function hairBack(style, c, who = {}) {
+  const king = who.king;
   const c2 = highlight(c);
   if (king && style % 6 === 0) return `<ellipse cx="0" cy="-94" rx="23" ry="23" fill="${c}"/>`; // the King's short hair
+  if (who.baby && style % 6 === 0) return `<ellipse cx="0" cy="-92" rx="22.5" ry="23" fill="${c}"/>`; // the little sister's short wispy hair
   switch (style % 6) {
     case 1: // wavy curls with a little tied-back tuft (Elsa's own)
       return `<path d="M-19,-104 Q-42,-100 -38,-76 Q-36,-62 -28,-60 Q-30,-80 -22,-90Z" fill="${c}"/>
@@ -178,9 +180,11 @@ function hairBack(style, c, king) {
   <ellipse cx="0" cy="-92" rx="24" ry="25" fill="${c}"/>`;
   }
 }
-function fringe(style, c, king) {
+function fringe(style, c, who = {}) {
+  const king = who.king;
   const c2 = highlight(c);
   if (king && style % 6 === 0) return `<path d="M-19,-92 Q-22,-114 0,-113 Q22,-114 19,-92 Q15,-102 8,-101 Q0,-107 -8,-101 Q-15,-102 -19,-92Z" fill="${c}"/><path d="M-10,-108 Q0,-111 10,-108" stroke="${c2}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>`;
+  if (who.baby && style % 6 === 0) return `<path d="M-20,-92 Q-24,-113 0,-112 Q24,-113 20,-92 Q14,-103 7,-102 Q0,-108 -8,-101 Q-15,-101 -20,-92Z" fill="${c}"/><path d="M-8,-110 Q-2,-116 4,-111 M2,-112 Q8,-117 12,-110" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M-12,-106 Q0,-111 12,-106" stroke="${highlight(c)}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>`;
   switch (style % 6) {
     case 1:
       return `<path d="M-21,-90 Q-21,-113 4,-111 Q23,-109 22,-92 Q13,-103 -1,-100 Q-9,-97 -14,-88 Q-18,-85 -21,-90Z" fill="${c}"/>
@@ -205,9 +209,17 @@ function hairAccSVG(style, c) {
 }
 
 // ---- face: eyes, mouth and cheeks, plus makeup ----
-const faceGeom = (p) => (p.face === 'elsa' ? { ex: 6.3, ey: -88.6, my: -79.6, cx: 11.5, cy: -82.5 } : { ex: 6, ey: -88, my: -80.5, cx: 10, cy: -83 });
+const faceGeom = (p) => (p.baby ? { ex: 7.2, ey: -88, my: -78.6, cx: 12.5, cy: -81.5 } : p.face === 'elsa' ? { ex: 6.3, ey: -88.6, my: -79.6, cx: 11.5, cy: -82.5 } : { ex: 6, ey: -88, my: -80.5, cx: 10, cy: -83 });
 
 function face(p) {
+  if (p.baby) return `<ellipse cx="-7.2" cy="-88" rx="3.5" ry="3.9" fill="#fff"/><ellipse cx="7.2" cy="-88" rx="3.5" ry="3.9" fill="#fff"/>
+  <circle cx="-7.2" cy="-87.6" r="2.9" fill="#6f8fb5"/><circle cx="7.2" cy="-87.6" r="2.9" fill="#6f8fb5"/>
+  <circle cx="-7.2" cy="-87.6" r="1.4" fill="#2d3a55"/><circle cx="7.2" cy="-87.6" r="1.4" fill="#2d3a55"/>
+  <circle cx="-6.2" cy="-88.8" r="1" fill="#fff"/><circle cx="8.2" cy="-88.8" r="1" fill="#fff"/>
+  <path d="M-10.5,-93 Q-7,-94.6 -3.6,-93 M3.6,-93 Q7,-94.6 10.5,-93" stroke="#d9a878" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".8"/>
+  <circle cx="-12.5" cy="-81.5" r="4.4" fill="#ff8f9f" opacity=".5"/><circle cx="12.5" cy="-81.5" r="4.4" fill="#ff8f9f" opacity=".5"/>
+  <ellipse cx="0" cy="-83.2" rx="1.6" ry="1.2" fill="#eab4a0"/>
+  <path d="M-4.4,-78.6 Q0,-74.4 4.4,-78.6 Q0,-77 -4.4,-78.6Z" fill="#d8566f"/><path d="M-4.4,-78.6 Q0,-74.4 4.4,-78.6" stroke="#c4476e" stroke-width="1.3" fill="none" stroke-linecap="round"/>`;
   if (p.face !== 'elsa') return `<circle cx="-6" cy="-88" r="2.3" fill="#3b2a4a"/>
   <circle cx="6" cy="-88" r="2.3" fill="#3b2a4a"/>
   <circle cx="-10" cy="-83" r="3" fill="#ff8fa8" opacity=".5"/>
@@ -272,21 +284,21 @@ function kingOutfit(style, c) {
 export function princessSVG(p, look) {
   const l = { ...defaultLook(p), ...(look || {}) };
   const g = faceGeom(p);
-  return `<g class="body">
+  return `<g class="body"><g${p.baby ? ' transform="scale(.86)"' : ''}>
   <rect x="-10" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   <rect x="4" y="-22" width="6" height="20" rx="3" fill="${p.skin}"/>
   ${shoesSVG(l.shoes, l.shoesColor)}
-  ${hairBack(l.hairStyle, l.hairColor, p.king)}
+  ${hairBack(l.hairStyle, l.hairColor, p)}
   ${p.king ? kingOutfit(l.dress, l.dressColor) : dressSVG(l.dress, l.dressColor)}${p.queen ? pearls : ''}
   <path d="M-11,-70 Q-27,-58 -22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path d="M11,-70 Q27,-58 22,-42" stroke="${p.skin}" stroke-width="6" fill="none" stroke-linecap="round"/>
-  ${p.face === 'elsa' ? `<path d="M0,-107 C11,-107 18.5,-99 18.5,-89 C18.5,-79 12,-72 0,-71.5 C-12,-72 -18.5,-79 -18.5,-89 C-18.5,-99 -11,-107 0,-107Z" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
-  ${fringe(l.hairStyle, l.hairColor, p.king)}
+  ${p.baby ? `<circle cx="0" cy="-89" r="20" fill="${p.skin}"/>` : p.face === 'elsa' ? `<path d="M0,-107 C11,-107 18.5,-99 18.5,-89 C18.5,-79 12,-72 0,-71.5 C-12,-72 -18.5,-79 -18.5,-89 C-18.5,-99 -11,-107 0,-107Z" fill="${p.skin}"/>` : `<circle cx="0" cy="-90" r="17" fill="${p.skin}"/>`}
+  ${fringe(l.hairStyle, l.hairColor, p)}
   ${face(p)}${p.king ? beard(l.hairColor) : ''}
   ${cheeksSVG(l.cheeks, l.cheeksColor, g)}${eyesSVG(l.eyes, l.eyesColor, g)}${lipsSVG(l.lips, l.lipsColor, g)}
   ${hairAccSVG(l.hairAcc, l.hairAccColor)}
   ${tiaraSVG(l.tiara, l.tiaraColor)}
-</g>`;
+</g></g>`;
 }
 
 // A princess sitting on a unicorn's back (legs hidden by the clip, which the caller defines).

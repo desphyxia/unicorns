@@ -3,7 +3,7 @@
 A cosy, rainbow-coloured web game for a 3-year-old: princesses, unicorns and a big castle.
 
 **Milestones 1–5 (this version)**
-- Dollhouse castle with eight bedrooms (all with bunk beds: two sleepers per room), a hair salon, a makeup room, a bathroom and a kitchen. The household is 9 princesses, Queen Sara and King Jonas. Drag a princess into a room and she moves in (saved on the device).
+- Dollhouse castle with eight bedrooms (all with bunk beds: two sleepers per room), a hair salon, a makeup room, a bathroom and a kitchen. The household is 10 princesses (including Elsa's little sister "Baby", a smaller toddler with wispy hair and a flower clip), Queen Sara and King Jonas. Drag a princess into a room and she moves in (saved on the device).
 - Tap a princess to open her wardrobe (6 dress, 6 shoe and 6 tiara styles in 8 colours each, plus treasure unlocks). Tap a unicorn to style her: coat pattern and colour, mane and tail colours, and an extra (saddle blanket, flower garland, tail bow, horn jewel or anklets). On the styling screen, hold the round arrow button for a moment to put that character's styling back to the start (unlocked clothes are kept).
 - Kitchen (bottom left): tap it, or drop a princess on it. Two modes: ice cream (up to three scoops from ten flavours, ten toppings and five kinds of sprinkles) and salad. For the salad, tap or drag any of 24 ingredients into the big bowl, tap the spoons to toss the salad and the fork to let her eat it.
 - Bakery (third kitchen button): build a cupcake in three steps (paper cup and sponge, frosting style and colour, toppings and sprinkles), put it on the tray (six places) or let the princess eat it.
