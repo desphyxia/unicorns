@@ -1,5 +1,5 @@
 // Caring for the unicorns: drag food to feed them, drag the brush to groom them.
-import { BASKETS, BRUSH_REST, foodSVG, brushSVG } from './stableart.js';
+import { BASKETS, BRUSH_REST, STALL_GAP, foodSVG, brushSVG } from './stableart.js';
 
 export function initStable(ctx) {
   const { el, tools, svg, chars, audio, toSvg, sparkle, hearts, getMode, isBusy, award } = ctx;
@@ -9,7 +9,7 @@ export function initStable(ctx) {
   const brushEl = el('g', { style: 'display:none;cursor:grab' }, tools);
   brushEl.innerHTML = brushSVG();
 
-  const unicornAt = (x, y) => chars.find((c) => c.kind === 'unicorn' && !c.mount && Math.abs(x - c.x) < 120 && y > c.y - 190 && y < c.y + 10);
+  const unicornAt = (x, y) => chars.filter((c) => c.kind === 'unicorn' && !c.mount && Math.abs(x - c.x) < STALL_GAP * 0.55 && y > c.y - 190 && y < c.y + 10).sort((a, b) => Math.abs(x - a.x) - Math.abs(x - b.x))[0];
 
   function happy(c) {
     c.joy = 0;

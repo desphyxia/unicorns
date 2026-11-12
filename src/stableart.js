@@ -1,7 +1,11 @@
 // The stable: where the unicorns get fed and brushed.
-import { RAINBOW } from './cast.js';
+import { RAINBOW, UNICORNS } from './cast.js';
 
-export const STALL_X = [190, 430, 670, 910, 1150, 1390];
+// one stall per unicorn, side by side across the stable (the unicorns shrink a little to fit)
+const STALLS = UNICORNS.length;
+export const STALL_GAP = 1520 / STALLS;
+export const STALL_X = Array.from({ length: STALLS }, (_, i) => Math.round(40 + STALL_GAP * (i + 0.5)));
+export const STALL_SCALE = Math.min(1.3, (STALL_GAP * 0.96) / (190 * 0.85));
 export const STALL_Y = 774;
 export const FOODS = ['apple', 'carrot', 'cupcake'];
 export const BASKETS = [{ food: 'apple', x: 210, y: 296 }, { food: 'carrot', x: 380, y: 296 }, { food: 'cupcake', x: 550, y: 296 }];
@@ -34,9 +38,8 @@ export function stableSVG() {
     const x = 60 + i * 96, y = 36 + Math.sin(i / 15 * Math.PI) * 30;
     return `<polygon points="${x - 20},${y} ${x + 20},${y} ${x},${y + 44}" fill="${RAINBOW[i % 6]}"/>`;
   }).join('');
-  const posts = STALL_X.map((x) => `<rect x="${x - 128}" y="500" width="16" height="274" rx="6" fill="#f2c79b" stroke="#fff" stroke-width="3"/>`).join('')
-    + `<rect x="${STALL_X[5] + 112}" y="500" width="16" height="274" rx="6" fill="#f2c79b" stroke="#fff" stroke-width="3"/>`;
-  const hearts = STALL_X.map((x, i) => `<path transform="translate(${x} 470)" d="M0,24 C-46,-6 -22,-42 0,-18 C22,-42 46,-6 0,24Z" fill="${RAINBOW[i]}" stroke="#fff" stroke-width="4"/>`).join('');
+  const posts = [...STALL_X.map((x) => x - STALL_GAP / 2), STALL_X[STALL_X.length - 1] + STALL_GAP / 2].map((x) => `<rect x="${(x - 8).toFixed(1)}" y="500" width="16" height="274" rx="6" fill="#f2c79b" stroke="#fff" stroke-width="3"/>`).join('');
+  const hearts = STALL_X.map((x, i) => `<path transform="translate(${x} 470) scale(${(STALL_GAP / 240).toFixed(2)})" d="M0,24 C-46,-6 -22,-42 0,-18 C22,-42 46,-6 0,24Z" fill="${RAINBOW[i % 6]}" stroke="#fff" stroke-width="4"/>`).join('');
   const hay = Array.from({ length: 90 }, (_, i) => `<path d="M${(i * 37) % 1600},${720 + (i * 53) % 170} l14,-10 M${(i * 37) % 1600 + 6},${724 + (i * 53) % 170} l10,-14" stroke="#f5c542" stroke-width="3" stroke-linecap="round" opacity=".7"/>`).join('');
   return `<g id="stableScene" style="display:none">
     <rect width="1600" height="900" fill="#ffe3cc"/>

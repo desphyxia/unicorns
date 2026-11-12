@@ -35,3 +35,4 @@ No build step. Serve the folder with any static server, e.g. `python3 -m http.se
 ## Publish on GitHub Pages
 Repo **Settings → Pages → Source: GitHub Actions**. The workflow in `.github/workflows/pages.yml` deploys on every push to `main`.
 - The game is made for a tablet held sideways; held upright it shows a picture asking you to turn it.
+- There are 11 unicorns; the stable has one stall for each (they shrink a little to fit side by side).

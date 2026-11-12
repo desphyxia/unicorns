@@ -29,6 +29,12 @@ export const UNICORNS = [
   { id: 'u4', body: '#e6ffe9', hoof: '#b3ecc0' },
   { id: 'u5', body: '#fff3d6', hoof: '#ffd98a' },
   { id: 'u6', body: '#efe3ff', hoof: '#d2b8ff' },
+  // five more unicorns, each with her own mane and a little extra from the start
+  { id: 'u7', body: '#fff0e0', hoof: '#ffcfa8', mane: 3, coat: 2 },
+  { id: 'u8', body: '#e0fbff', hoof: '#a8e6f0', mane: 2, extra: 2, extraColor: '#ffffff' },
+  { id: 'u9', body: '#fdeaff', hoof: '#f0b8ff', mane: 1, coat: 4 },
+  { id: 'u10', body: '#f0ffd9', hoof: '#d2ee9a', mane: 5, extra: 3, extraColor: '#a98bff' },
+  { id: 'u11', body: '#ffe9e9', hoof: '#ffb8b8', mane: 4, coat: 1, extra: 4, extraColor: '#ffd84d' },
 ];
 
 // Colour choices in the wardrobe: the rainbow plus pink and white (gold first for tiaras).

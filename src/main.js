@@ -6,7 +6,7 @@ import { openTeeth } from './teeth.js';
 import { openKitchen } from './kitchen.js';
 import { initStickers } from './stickers.js';
 import { startTrip, endTrip, updateTrip, destIcon, DEST_IDS, groupSize } from './trips.js';
-import { STALL_X, STALL_Y } from './stableart.js';
+import { STALL_X, STALL_Y, STALL_GAP, STALL_SCALE } from './stableart.js';
 import { initSky, updateSky, isNight } from './sky.js';
 import * as party from './party.js';
 import { initPhotos, clearPhotos } from './photos.js';
@@ -124,7 +124,7 @@ function bedSpot(c) {
 
 function boundsOf(c) {
   if (mode === 'lake') return SHORE;
-  if (mode === 'stable') { const x = STALL_X[c.index]; return { x0: x - 40, x1: x + 40, y0: STALL_Y - 4, y1: STALL_Y + 4 }; }
+  if (mode === 'stable') { const x = STALL_X[c.index]; return { x0: x - STALL_GAP * 0.15, x1: x + STALL_GAP * 0.15, y0: STALL_Y - 4, y1: STALL_Y + 4 }; }
   if (party.isActive()) return party.boundsFor(c);
   return c.home === null ? GROUND : roomBounds(ROOMS[c.home]);
 }
@@ -899,7 +899,7 @@ function frame(now) {
     }
 
     const lift = c.dragging ? 14 : 0;
-    const s = c.scale * (mode === 'stable' && c.kind === 'unicorn' ? 1.3 : 1) * (c.dragging ? 1.18 : 1) * (1 - 0.2 * c.lie);
+    const s = c.scale * (mode === 'stable' && c.kind === 'unicorn' ? STALL_SCALE : 1) * (c.dragging ? 1.18 : 1) * (1 - 0.2 * c.lie);
     const wave = inW ? Math.sin((t + c.phase) * 2.2) * 3 : 0;
     const bob = (inW ? wave : c.moving && c.speed < 200 ? Math.abs(Math.sin((t + c.phase) * 9)) * 4 : Math.sin((t + c.phase) * 2) * 1.2) + (c.munch > 0 ? Math.sin(t * 28) * 3 * Math.min(1, c.munch) : 0);
     const sway = inW ? Math.sin((t + c.phase) * 1.3) * 4 : 0;

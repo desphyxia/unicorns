@@ -318,7 +318,7 @@ export const MANE_SETS = [
 ];
 
 export function defaultUnicornLook(u) {
-  return { coat: 0, coatColor: u.body, mane: 0, extra: 0, extraColor: '#ff8fc7' };
+  return { coat: u.coat || 0, coatColor: u.body, mane: u.mane || 0, extra: u.extra || 0, extraColor: u.extraColor || '#ff8fc7' };
 }
 
 function coatPattern(style) {
